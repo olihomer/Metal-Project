@@ -1,0 +1,539 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		DEE79A11307CD79700787DCC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEE799FB307CD79500787DCC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DEE79A02307CD79500787DCC;
+			remoteInfo = "Metal Project";
+		};
+		DEE79A1B307CD79700787DCC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DEE799FB307CD79500787DCC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DEE79A02307CD79500787DCC;
+			remoteInfo = "Metal Project";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		DEE79A03307CD79500787DCC /* Metal Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Metal Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEE79A10307CD79700787DCC /* Metal ProjectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Metal ProjectTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEE79A1A307CD79700787DCC /* Metal ProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Metal ProjectUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DEE79A05307CD79500787DCC /* Metal Project */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Metal Project";
+			sourceTree = "<group>";
+		};
+		DEE79A13307CD79700787DCC /* Metal ProjectTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Metal ProjectTests";
+			sourceTree = "<group>";
+		};
+		DEE79A1D307CD79700787DCC /* Metal ProjectUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Metal ProjectUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DEE79A00307CD79500787DCC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		DEE79A0D307CD79700787DCC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		DEE79A17307CD79700787DCC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DEE799FA307CD79500787DCC = {
+			isa = PBXGroup;
+			children = (
+				DEE79A05307CD79500787DCC /* Metal Project */,
+				DEE79A13307CD79700787DCC /* Metal ProjectTests */,
+				DEE79A1D307CD79700787DCC /* Metal ProjectUITests */,
+				DEE79A04307CD79500787DCC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DEE79A04307CD79500787DCC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DEE79A03307CD79500787DCC /* Metal Project.app */,
+				DEE79A10307CD79700787DCC /* Metal ProjectTests.xctest */,
+				DEE79A1A307CD79700787DCC /* Metal ProjectUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DEE79A02307CD79500787DCC /* Metal Project */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DEE79A22307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal Project" */;
+			buildPhases = (
+				DEE799FF307CD79500787DCC /* Sources */,
+				DEE79A00307CD79500787DCC /* Frameworks */,
+				DEE79A01307CD79500787DCC /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				DEE79A05307CD79500787DCC /* Metal Project */,
+			);
+			name = "Metal Project";
+			productName = "Metal Project";
+			productReference = DEE79A03307CD79500787DCC /* Metal Project.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DEE79A0F307CD79700787DCC /* Metal ProjectTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DEE79A25307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal ProjectTests" */;
+			buildPhases = (
+				DEE79A0C307CD79700787DCC /* Sources */,
+				DEE79A0D307CD79700787DCC /* Frameworks */,
+				DEE79A0E307CD79700787DCC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEE79A12307CD79700787DCC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DEE79A13307CD79700787DCC /* Metal ProjectTests */,
+			);
+			name = "Metal ProjectTests";
+			productName = "Metal ProjectTests";
+			productReference = DEE79A10307CD79700787DCC /* Metal ProjectTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DEE79A19307CD79700787DCC /* Metal ProjectUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DEE79A28307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal ProjectUITests" */;
+			buildPhases = (
+				DEE79A16307CD79700787DCC /* Sources */,
+				DEE79A17307CD79700787DCC /* Frameworks */,
+				DEE79A18307CD79700787DCC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DEE79A1C307CD79700787DCC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DEE79A1D307CD79700787DCC /* Metal ProjectUITests */,
+			);
+			name = "Metal ProjectUITests";
+			productName = "Metal ProjectUITests";
+			productReference = DEE79A1A307CD79700787DCC /* Metal ProjectUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DEE799FB307CD79500787DCC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					DEE79A02307CD79500787DCC = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					DEE79A0F307CD79700787DCC = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = DEE79A02307CD79500787DCC;
+					};
+					DEE79A19307CD79700787DCC = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = DEE79A02307CD79500787DCC;
+					};
+				};
+			};
+			buildConfigurationList = DEE799FE307CD79500787DCC /* Build configuration list for PBXProject "Metal Project" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DEE799FA307CD79500787DCC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DEE79A04307CD79500787DCC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DEE79A02307CD79500787DCC /* Metal Project */,
+				DEE79A0F307CD79700787DCC /* Metal ProjectTests */,
+				DEE79A19307CD79700787DCC /* Metal ProjectUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DEE79A01307CD79500787DCC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		DEE79A0E307CD79700787DCC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		DEE79A18307CD79700787DCC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DEE799FF307CD79500787DCC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		DEE79A0C307CD79700787DCC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+		DEE79A16307CD79700787DCC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DEE79A12307CD79700787DCC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DEE79A02307CD79500787DCC /* Metal Project */;
+			targetProxy = DEE79A11307CD79700787DCC /* PBXContainerItemProxy */;
+		};
+		DEE79A1C307CD79700787DCC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DEE79A02307CD79500787DCC /* Metal Project */;
+			targetProxy = DEE79A1B307CD79700787DCC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		DEE79A20307CD79700787DCC /* Debug configuration for PBXProject "Metal Project" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DEE79A21307CD79700787DCC /* Release configuration for PBXProject "Metal Project" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		DEE79A23307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal Project" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-Project";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DEE79A24307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal Project" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-Project";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DEE79A26307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal ProjectTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-ProjectTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Metal Project.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Metal Project";
+			};
+			name = Debug;
+		};
+		DEE79A27307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal ProjectTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-ProjectTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Metal Project.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Metal Project";
+			};
+			name = Release;
+		};
+		DEE79A29307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal ProjectUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-ProjectUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Metal Project";
+			};
+			name = Debug;
+		};
+		DEE79A2A307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal ProjectUITests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Metal-ProjectUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = "Metal Project";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DEE799FE307CD79500787DCC /* Build configuration list for PBXProject "Metal Project" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEE79A20307CD79700787DCC /* Debug configuration for PBXProject "Metal Project" */,
+				DEE79A21307CD79700787DCC /* Release configuration for PBXProject "Metal Project" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		DEE79A22307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal Project" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEE79A23307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal Project" */,
+				DEE79A24307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal Project" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		DEE79A25307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal ProjectTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEE79A26307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal ProjectTests" */,
+				DEE79A27307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal ProjectTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		DEE79A28307CD79700787DCC /* Build configuration list for PBXNativeTarget "Metal ProjectUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DEE79A29307CD79700787DCC /* Debug configuration for PBXNativeTarget "Metal ProjectUITests" */,
+				DEE79A2A307CD79700787DCC /* Release configuration for PBXNativeTarget "Metal ProjectUITests" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DEE799FB307CD79500787DCC /* Project object */;
+	validationLevel = 1;
+}
