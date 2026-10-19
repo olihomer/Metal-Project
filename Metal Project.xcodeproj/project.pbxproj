@@ -6,6 +6,12 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DEE79AC9307D8F1100787DCC /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEE79AC8307D8F1100787DCC /* Metal.framework */; };
+		DEE79ACB307D8F1600787DCC /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEE79ACA307D8F1600787DCC /* QuartzCore.framework */; };
+		DEE79ACD307D8F1F00787DCC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEE79ACC307D8F1F00787DCC /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DEE79A11307CD79700787DCC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,9 @@
 		DEE79A03307CD79500787DCC /* Metal Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Metal Project.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEE79A10307CD79700787DCC /* Metal ProjectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Metal ProjectTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DEE79A1A307CD79700787DCC /* Metal ProjectUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Metal ProjectUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEE79AC8307D8F1100787DCC /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		DEE79ACA307D8F1600787DCC /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		DEE79ACC307D8F1F00787DCC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -51,6 +60,9 @@
 		DEE79A00307CD79500787DCC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				DEE79ACD307D8F1F00787DCC /* Foundation.framework in Frameworks */,
+				DEE79ACB307D8F1600787DCC /* QuartzCore.framework in Frameworks */,
+				DEE79AC9307D8F1100787DCC /* Metal.framework in Frameworks */,
 			);
 		};
 		DEE79A0D307CD79700787DCC /* Frameworks */ = {
@@ -72,6 +84,7 @@
 				DEE79A05307CD79500787DCC /* Metal Project */,
 				DEE79A13307CD79700787DCC /* Metal ProjectTests */,
 				DEE79A1D307CD79700787DCC /* Metal ProjectUITests */,
+				DEE79AC7307D8F1000787DCC /* Frameworks */,
 				DEE79A04307CD79500787DCC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -84,6 +97,16 @@
 				DEE79A1A307CD79700787DCC /* Metal ProjectUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DEE79AC7307D8F1000787DCC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DEE79ACC307D8F1F00787DCC /* Foundation.framework */,
+				DEE79ACA307D8F1600787DCC /* QuartzCore.framework */,
+				DEE79AC8307D8F1100787DCC /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +184,7 @@
 				TargetAttributes = {
 					DEE79A02307CD79500787DCC = {
 						CreatedOnToolsVersion = 27.0;
+						LastSwiftMigration = 2700;
 					};
 					DEE79A0F307CD79700787DCC = {
 						CreatedOnToolsVersion = 27.0;
@@ -366,6 +390,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -373,6 +398,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)/Metal Project/metal-cpp\"";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -386,6 +412,9 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Metal Project/BridgingHeader.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -396,6 +425,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -403,6 +433,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "\"$(PROJECT_DIR)/Metal Project/metal-cpp\"";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -416,6 +447,8 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Metal Project/BridgingHeader.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
