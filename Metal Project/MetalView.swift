@@ -10,12 +10,13 @@ import MetalKit
 import Metal
 import SwiftUI
 
-var engine = Renderer(OpaquePointer(Unmanaged.passUnretained(MTLCreateSystemDefaultDevice() as AnyObject).toOpaque()))
+let device = MTLCreateSystemDefaultDevice()
+var engine = Renderer(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
 
 struct MetalView: NSViewRepresentable
 {
     func makeNSView(context: Context) -> MTKView {
-        let device = MTLCreateSystemDefaultDevice()
+        let device = device
         let view = MTKView(frame: .zero, device: device)
         
         view.colorPixelFormat = MTLPixelFormat.bgra8Unorm

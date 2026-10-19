@@ -24,8 +24,8 @@ Renderer::Renderer(MTL::Device* device)
 :device_(NS::RetainPtr(device))
 {
     //Initialise Metal Objects
-    commandQueue_ = NS::RetainPtr(device_->newCommandQueue());
-    defaultLibrary_ = NS::RetainPtr(device_->newDefaultLibrary());
+    commandQueue_ = NS::TransferPtr(device_->newCommandQueue());
+    defaultLibrary_ = NS::TransferPtr(device_->newDefaultLibrary());
     
     auto* functionName = NS::String::string("vertexMain",NS::UTF8StringEncoding);
     auto* vertexFunction = defaultLibrary_->newFunction(functionName);
@@ -39,9 +39,16 @@ Renderer::Renderer(MTL::Device* device)
     pipelineDesc->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
 
     NS::Error* error;
-    pipelineState_ = NS::RetainPtr(device_->newRenderPipelineState(pipelineDesc,&error));
-
+    pipelineState_ = NS::TransferPtr(device_->newRenderPipelineState(pipelineDesc,&error));
+    if(error)
+    {
+        std::cout << error->code() << std::endl;
+        throw std::runtime_error("couldn't create pipeline");
+    }
+    
     pipelineDesc->release();
+    fragmentFunction->release();
+    vertexFunction->release();
 
 }
 
@@ -52,13 +59,8 @@ void Renderer::RunApp()
 
 void Renderer::RenderFrame(void* passPtr, void* drawablePtr)
 {
-    //std::cout << "RenderFrame()" << std::endl;
-    
     auto* passDescriptor = reinterpret_cast<MTL::RenderPassDescriptor*>(passPtr);
     auto* drawable = reinterpret_cast<MTL::Drawable*>(drawablePtr);
-    
-    passDescriptor->retain();
-    drawable->retain();
     
     auto* commandBuffer = commandQueue_->commandBuffer();
     auto* commandEncoder = commandBuffer->renderCommandEncoder(passDescriptor);
@@ -69,7 +71,4 @@ void Renderer::RenderFrame(void* passPtr, void* drawablePtr)
     commandEncoder->endEncoding();
     commandBuffer->presentDrawable(drawable);
     commandBuffer->commit();
-        
-    drawable->release();
-    passDescriptor->release();
 }
