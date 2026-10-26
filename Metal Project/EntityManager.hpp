@@ -23,6 +23,7 @@ private:
     
     template<typename T>
     void registerComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> component);
+    std::vector<ECS::ComponentReference>& listEntityComponents(ECS::Handle<ECS::Entity>);
     
     Pool<Entity> entities_;
     friend class ::World;

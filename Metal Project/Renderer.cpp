@@ -64,8 +64,6 @@ void Renderer::RunApp()
     {
         entities.push_back(myWorld.newEntity());
     }
-    
-    myWorld.printEntities();
 
     for(std::size_t i = 5; i < 8; i++)
     {
@@ -73,28 +71,28 @@ void Renderer::RunApp()
         entities.erase(entities.begin()+i);
     }
     
-    myWorld.printEntities();
-
     
     for(std::size_t i = 0; i < 10; i++)
     {
         entities.push_back(myWorld.newEntity());
     }
     
-    myWorld.printEntities();
 
     for(std::size_t i = 0; i < entities.size(); i++)
     {
         myWorld.deleteEntity(entities[i]);
     }
     
-    myWorld.printEntities();
     
     auto myEntity = myWorld.newEntity();
     auto myLight = myWorld.addComponent<Light>(myEntity);
     
-    myWorld.printComponents();
+    
+    myWorld.deleteEntity(myEntity);
+    
+    myWorld.printEntities();
 
+    myWorld.printComponents();
     
 }
 

@@ -15,5 +15,7 @@ ECS::Handle<ECS::Entity> World::newEntity(std::string name)
 
 void World::deleteEntity(ECS::Handle<ECS::Entity> handle)
 {
+    auto components = entityManager_.listEntityComponents(handle);
+    componentManager_.deleteComponents(components);
     entityManager_.deleteEntity(handle);
 }

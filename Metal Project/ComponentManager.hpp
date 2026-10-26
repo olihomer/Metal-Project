@@ -29,8 +29,10 @@ private:
     template<typename T>
     ECS::Handle<T> addComponent(ECS::Handle<Entity> entity);
     
+    void deleteComponents(const std::vector<ComponentReference>& components);
+    
     template<typename T>
-    Pool<T> GetPool();
+    Pool<T>& GetPool();
     
     Pool<Light> lights_;
     Pool<Mesh> meshes_;
@@ -47,12 +49,17 @@ ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity)
 }
 
 template<typename T>
-Pool<T> ComponentManager::GetPool()
+Pool<T>& ComponentManager::GetPool()
 {
     if constexpr (std::is_same_v<T, Light>) return lights_;
-    if constexpr (std::is_same_v<T, Mesh>) return meshes_;
-    if constexpr (std::is_same_v<T, RigidBody>) return rigidBodies_;
-    if constexpr (std::is_same_v<T, Transform>) return transforms_;
+    else
+        if constexpr (std::is_same_v<T, Mesh>) return meshes_;
+    else
+        if constexpr (std::is_same_v<T, RigidBody>) return rigidBodies_;
+    else
+        if constexpr (std::is_same_v<T, Transform>) return transforms_;
+    else
+        static_assert(false, "Unsupported pool type");
 }
 
 

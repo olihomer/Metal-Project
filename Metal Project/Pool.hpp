@@ -20,6 +20,7 @@ struct Handle
 {
     std::uint32_t slotIndex; //points to a slot
     std::uint32_t generation;
+    void print(){std::cout<<"Handle: "<<slotIndex<<" / "<<generation<<std::endl;};
 };
 
 struct Slot
@@ -43,6 +44,7 @@ private:
     std::vector<Slot> slots_; //vector of slots, each of which points to a physicalIndex of the element vector
     std::vector<Handle<T>> handles_; //vector of handles so that we can reverse lookup a slot/handle from an element/physical index
     std::queue<std::uint32_t> freeList_; //queue of available slot indexes
+    bool validateHandle(Handle<T> handle);
 };
 
 
@@ -87,6 +89,14 @@ Handle<T> Pool<T>::addElement()
 template<typename T>
 void Pool<T>::deleteElement(Handle<T> handle)
 {
+    std::cout << "Deleting element" << std::endl;
+    handle.print();
+    
+    if(!validateHandle(handle))
+    {
+        throw std::runtime_error("Pool::deleteElement() with stale handle");
+        exit(99);
+    }
     Slot& deadSlot = slots_[handle.slotIndex];
     deadSlot.isActive = false; //mark slot inactive
     freeList_.push(handle.slotIndex); //add slot to free list
@@ -139,21 +149,28 @@ void Pool<T>::print()
     
 }
 
+template<typename T>
+bool Pool<T>::validateHandle(Handle<T> handle)
+{
+    if(handle.slotIndex < 0 || handle.slotIndex > slots_.size()-1) return false;
+    Slot& s = slots_[handle.slotIndex];
+    if(handle.generation == s.generation && s.isActive == true)
+        return true;
+    else
+        return false;
+}
 
 
 template<typename T>
 T& Pool<T>::get(Handle<T> handle)
 {
-    Slot& s = slots_[handle.slotIndex];
-    if(handle.generation == s.generation)
+    if(!validateHandle(handle))
     {
-        return elements_[s.physicalIndex];
-    }
-    else
-    {
-        throw(std::runtime_error("Get call with stale handle"));
+        throw std::runtime_error("Pool::get() with stale handle");
         exit(99);
     }
+    Slot& s = slots_[handle.slotIndex];
+    return elements_[s.physicalIndex];
 }
 
 

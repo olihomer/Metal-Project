@@ -45,7 +45,6 @@ ComponentReference referenceFromHandle(ECS::Handle<T> handle)
     return temp;
 }
 
-
 }
 
 #endif /* ComponentReference_hpp */
