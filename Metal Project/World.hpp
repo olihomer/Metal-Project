@@ -24,6 +24,8 @@ public:
     ECS::Handle<ECS::Entity> newEntity(std::string name = "");
     template<typename T>
     ECS::Handle<T> addComponent(ECS::Handle<ECS::Entity> entity);
+    template<typename T>
+    void deleteComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> handle);
 
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
 
@@ -41,6 +43,14 @@ ECS::Handle<T> World::addComponent(ECS::Handle<ECS::Entity> entity)
     auto component = componentManager_.addComponent<T>(entity);
     entityManager_.registerComponent<T>(entity, component);
     return component;
+}
+
+
+template<typename T>
+void World::deleteComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> handle)
+{
+    componentManager_.deleteComponent<T>(handle);
+    entityManager_.deRegisterComponent<T>(entity, handle);
 }
 
 #endif /* World_hpp */

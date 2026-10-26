@@ -20,7 +20,7 @@ void EntityManager::deleteEntity(Handle<Entity> handle)
     entities_.deleteElement(handle);
 }
 
-std::vector<ECS::ComponentReference>& EntityManager::listEntityComponents(ECS::Handle<ECS::Entity> entity)
+const std::vector<ECS::ComponentReference>& EntityManager::listEntityComponents(ECS::Handle<ECS::Entity> entity)
 {
     auto& entityReference = entities_.get(entity);
     return entityReference.components_;

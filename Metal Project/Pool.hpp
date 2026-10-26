@@ -93,10 +93,8 @@ void Pool<T>::deleteElement(Handle<T> handle)
     handle.print();
     
     if(!validateHandle(handle))
-    {
         throw std::runtime_error("Pool::deleteElement() with stale handle");
-        exit(99);
-    }
+    
     Slot& deadSlot = slots_[handle.slotIndex];
     deadSlot.isActive = false; //mark slot inactive
     freeList_.push(handle.slotIndex); //add slot to free list
@@ -152,7 +150,7 @@ void Pool<T>::print()
 template<typename T>
 bool Pool<T>::validateHandle(Handle<T> handle)
 {
-    if(handle.slotIndex < 0 || handle.slotIndex > slots_.size()-1) return false;
+    if(handle.slotIndex >= slots_.size()) return false;
     Slot& s = slots_[handle.slotIndex];
     if(handle.generation == s.generation && s.isActive == true)
         return true;
@@ -165,10 +163,8 @@ template<typename T>
 T& Pool<T>::get(Handle<T> handle)
 {
     if(!validateHandle(handle))
-    {
         throw std::runtime_error("Pool::get() with stale handle");
-        exit(99);
-    }
+    
     Slot& s = slots_[handle.slotIndex];
     return elements_[s.physicalIndex];
 }

@@ -86,7 +86,7 @@ void Renderer::RunApp()
     
     auto myEntity = myWorld.newEntity();
     auto myLight = myWorld.addComponent<Light>(myEntity);
-    
+    myWorld.deleteComponent(myEntity, myLight);
     
     myWorld.deleteEntity(myEntity);
     

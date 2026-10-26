@@ -28,7 +28,9 @@ class ComponentManager
 private:
     template<typename T>
     ECS::Handle<T> addComponent(ECS::Handle<Entity> entity);
-    
+    template<typename T>
+    void deleteComponent(ECS::Handle<T> handle);
+
     void deleteComponents(const std::vector<ComponentReference>& components);
     
     template<typename T>
@@ -46,6 +48,12 @@ template<typename T>
 ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity)
 {
     return GetPool<T>().addElement();
+}
+
+template<typename T>
+void ComponentManager::deleteComponent(ECS::Handle<T> handle)
+{
+    return GetPool<T>().deleteElement(handle);
 }
 
 template<typename T>
