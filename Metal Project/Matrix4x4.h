@@ -12,58 +12,58 @@ constexpr float TWO_PI = 6.28318530718f;
 
 class Matrix4x4{
 public:
-	float m_mat[4][4] = {};
+	float mat_[4][4] = {};
 
 	void setIdentity()
 	{
-		::memset(m_mat, 0, sizeof(float) * 16);
-		m_mat[0][0] = 1;
-		m_mat[1][1] = 1;
-		m_mat[2][2] = 1;
-		m_mat[3][3] = 1;
+		::memset(mat_, 0, sizeof(float) * 16);
+		mat_[0][0] = 1;
+		mat_[1][1] = 1;
+		mat_[2][2] = 1;
+		mat_[3][3] = 1;
 	}
 
 	void setTranslation(const Vector3D& translation)
 	{
-		m_mat[3][0] = translation.m_x;
-		m_mat[3][1] = translation.m_y;
-		m_mat[3][2] = translation.m_z;
+		mat_[3][0] = translation.x_;
+		mat_[3][1] = translation.y_;
+		mat_[3][2] = translation.z_;
 	}
 
 	void setScale(const Vector3D& scale)
 	{
-		m_mat[0][0] = scale.m_x;
-		m_mat[1][1] = scale.m_y;
-		m_mat[2][2] = scale.m_z;
+		mat_[0][0] = scale.x_;
+		mat_[1][1] = scale.y_;
+		mat_[2][2] = scale.z_;
 	}
 
 	void setRotX(float psi)
 	{
-		m_mat[1][1] = cosf(psi);
-		m_mat[1][2] = sinf(psi);
-		m_mat[2][1] = -sinf(psi);
-		m_mat[2][2] = cosf(psi);
+		mat_[1][1] = cosf(psi);
+		mat_[1][2] = sinf(psi);
+		mat_[2][1] = -sinf(psi);
+		mat_[2][2] = cosf(psi);
 	}
 
 	void setRotY(float theta)
 	{
-		m_mat[0][0] = cosf(theta);
-		m_mat[0][2] = -sinf(theta);
-		m_mat[2][0] = sinf(theta);
-		m_mat[2][2] = cosf(theta);
+		mat_[0][0] = cosf(theta);
+		mat_[0][2] = -sinf(theta);
+		mat_[2][0] = sinf(theta);
+		mat_[2][2] = cosf(theta);
 	}
 
 	void setRotZ(float phi)
 	{
-		m_mat[0][0] = cosf(phi);
-		m_mat[0][1] = sinf(phi);
-		m_mat[1][0] = -sinf(phi);
-		m_mat[1][1] = cosf(phi);
+		mat_[0][0] = cosf(phi);
+		mat_[0][1] = sinf(phi);
+		mat_[1][0] = -sinf(phi);
+		mat_[1][1] = cosf(phi);
 	}
 
 	void setMatrix(Matrix4x4 matrix)
 	{
-		::memcpy(&m_mat, &matrix, sizeof(float) * 16);
+		::memcpy(&mat_, &matrix, sizeof(float) * 16);
 	}
 
 
@@ -73,20 +73,20 @@ public:
 		for (int i = 0; i < 4; i++)
 			for (int j = 0; j < 4; j++)
 			{
-				out.m_mat[i][j] =
-					m_mat[i][0] * matrix.m_mat[0][j] + m_mat[i][1] * matrix.m_mat[1][j] +
-					m_mat[i][2] * matrix.m_mat[2][j] + m_mat[i][3] * matrix.m_mat[3][j];
+				out.mat_[i][j] =
+					mat_[i][0] * matrix.mat_[0][j] + mat_[i][1] * matrix.mat_[1][j] +
+					mat_[i][2] * matrix.mat_[2][j] + mat_[i][3] * matrix.mat_[3][j];
 			}		
-		::memcpy(m_mat, out.m_mat, sizeof(float) * 16);
+		::memcpy(mat_, out.mat_, sizeof(float) * 16);
 	}
 
 	void setOrthoLH(float width, float height, float near_plane, float far_plane)
 	{
 		setIdentity();
-		m_mat[0][0] = 2.0f / width;
-		m_mat[1][1] = 2.0f / height;;
-		m_mat[2][2] = 1.0f / (far_plane - near_plane);
-		m_mat[3][2] = -(near_plane / (far_plane - near_plane));
+		mat_[0][0] = 2.0f / width;
+		mat_[1][1] = 2.0f / height;;
+		mat_[2][2] = 1.0f / (far_plane - near_plane);
+		mat_[3][2] = -(near_plane / (far_plane - near_plane));
 	}
 	
 
@@ -95,27 +95,27 @@ public:
 		float theta = (float)fov / 2.0f * 0.0174532f;
 		
 		setIdentity();
-		m_mat[0][0] = 1 / tanf(theta);
-		m_mat[1][1] = aspect / tanf(theta);
-		m_mat[2][2] = far_plane / (far_plane - near_plane);
-		m_mat[3][2] = -(near_plane * far_plane) / (far_plane - near_plane);
-		m_mat[2][3] = 1.0f;
-		m_mat[3][3] = 0;
+		mat_[0][0] = 1 / tanf(theta);
+		mat_[1][1] = aspect / tanf(theta);
+		mat_[2][2] = far_plane / (far_plane - near_plane);
+		mat_[3][2] = -(near_plane * far_plane) / (far_plane - near_plane);
+		mat_[2][3] = 1.0f;
+		mat_[3][3] = 0;
 	}
 
 	Vector3D getUp()
 	{
-		return Vector3D(m_mat[1][0], m_mat[1][1], m_mat[1][2]);
+		return Vector3D(mat_[1][0], mat_[1][1], mat_[1][2]);
 	}
 
 	Vector3D getForward()
 	{
-		return Vector3D(m_mat[2][0], m_mat[2][1], m_mat[2][2]);
+		return Vector3D(mat_[2][0], mat_[2][1], mat_[2][2]);
 	}
 
 	Vector3D getRight()
 	{
-		return Vector3D(m_mat[0][0], m_mat[0][1], m_mat[0][2]);
+		return Vector3D(mat_[0][0], mat_[0][1], mat_[0][2]);
 	}
 
 	Matrix4x4()
@@ -128,13 +128,13 @@ public:
 		Vector4D minor, v1, v2, v3;
 		float det;
 
-		v1 = Vector4D(this->m_mat[0][0], this->m_mat[1][0], this->m_mat[2][0], this->m_mat[3][0]);
-		v2 = Vector4D(this->m_mat[0][1], this->m_mat[1][1], this->m_mat[2][1], this->m_mat[3][1]);
-		v3 = Vector4D(this->m_mat[0][2], this->m_mat[1][2], this->m_mat[2][2], this->m_mat[3][2]);
+		v1 = Vector4D(this->mat_[0][0], this->mat_[1][0], this->mat_[2][0], this->mat_[3][0]);
+		v2 = Vector4D(this->mat_[0][1], this->mat_[1][1], this->mat_[2][1], this->mat_[3][1]);
+		v3 = Vector4D(this->mat_[0][2], this->mat_[1][2], this->mat_[2][2], this->mat_[3][2]);
 
 		minor.cross(v1, v2, v3);
-		det = -(this->m_mat[0][3] * minor.m_x + this->m_mat[1][3] * minor.m_y + this->m_mat[2][3] * minor.m_z +
-			this->m_mat[3][3] * minor.m_w);
+		det = -(this->mat_[0][3] * minor.x_ + this->mat_[1][3] * minor.y_ + this->mat_[2][3] * minor.z_ +
+			this->mat_[3][3] * minor.w_);
 		return det;
 	}
 
@@ -155,29 +155,21 @@ public:
 				{
 					a = j;
 					if (j > i) a = a - 1;
-					vec[a].m_x = (this->m_mat[j][0]);
-					vec[a].m_y = (this->m_mat[j][1]);
-					vec[a].m_z = (this->m_mat[j][2]);
-					vec[a].m_w = (this->m_mat[j][3]);
+					vec[a].x_ = (this->mat_[j][0]);
+					vec[a].y_ = (this->mat_[j][1]);
+					vec[a].z_ = (this->mat_[j][2]);
+					vec[a].w_ = (this->mat_[j][3]);
 				}
 			}
 			v.cross(vec[0], vec[1], vec[2]);
 
-			out.m_mat[0][i] = (powf(-1.0f, (float)i) * v.m_x / det);
-			out.m_mat[1][i] = (powf(-1.0f, (float)i) * v.m_y / det);
-			out.m_mat[2][i] = (powf(-1.0f, (float)i) * v.m_z / det);
-			out.m_mat[3][i] = (powf(-1.0f, (float)i) * v.m_w / det);
+			out.mat_[0][i] = (powf(-1.0f, (float)i) * v.x_ / det);
+			out.mat_[1][i] = (powf(-1.0f, (float)i) * v.y_ / det);
+			out.mat_[2][i] = (powf(-1.0f, (float)i) * v.z_ / det);
+			out.mat_[3][i] = (powf(-1.0f, (float)i) * v.w_ / det);
 		}
 
 		this->setMatrix(out);
-	}
-
-	void debugPrint(const char* txt)
-	{
-		char debug[300];
-
-		sprintf_s(debug, "%s\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", txt,m_mat[0][0], m_mat[0][1], m_mat[0][2], m_mat[0][3], m_mat[1][0], m_mat[1][1], m_mat[1][2], m_mat[1][3], m_mat[2][0], m_mat[2][1], m_mat[2][2], m_mat[2][3], m_mat[3][0], m_mat[3][1], m_mat[3][2], m_mat[3][3]);
-		OutputDebugString(debug);
 	}
 
 	Vector3D getEulerAngles()
@@ -188,24 +180,24 @@ public:
 		Vector3D axis_y = getUp();
 		Vector3D axis_z = getForward();
 
-		if (axis_z.m_y != 1 && axis_z.m_y != -1)
+		if (axis_z.y_ != 1 && axis_z.y_ != -1)
 		{
-			pitch = -asinf(axis_z.m_y);
-			yaw = atan2f(axis_z.m_x / cosf(pitch), axis_z.m_z / cosf(pitch));
-			roll = atan2f(axis_x.m_y / cosf(pitch), axis_y.m_y / cosf(pitch));
+			pitch = -asinf(axis_z.y_);
+			yaw = atan2f(axis_z.x_ / cosf(pitch), axis_z.z_ / cosf(pitch));
+			roll = atan2f(axis_x.y_ / cosf(pitch), axis_y.y_ / cosf(pitch));
 		}
 		else
 		{
 			roll = 0;
-			if (axis_z.m_y == -1)
+			if (axis_z.y_ == -1)
 			{
 				pitch = TWO_PI / 4;
-				yaw = roll + atan2(axis_y.m_x, axis_x.m_x);
+				yaw = roll + atan2(axis_y.x_, axis_x.x_);
 			}
 			else
 			{
 				pitch = -TWO_PI / 4;
-				yaw = -roll - atan2(axis_y.m_x, axis_x.m_x);
+				yaw = -roll - atan2(axis_y.x_, axis_x.x_);
 			}
 
 		}

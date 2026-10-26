@@ -17,6 +17,7 @@
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
+#include "World.hpp"
 
 
 
@@ -55,6 +56,46 @@ Renderer::Renderer(MTL::Device* device)
 void Renderer::RunApp()
 {
     std::cout << "RunApp()" << std::endl;
+    World myWorld;
+    
+    std::vector<ECS::Handle<ECS::Entity>> entities;
+    
+    for(std::size_t i = 0; i < 10; i++)
+    {
+        entities.push_back(myWorld.newEntity());
+    }
+    
+    myWorld.printEntities();
+
+    for(std::size_t i = 5; i < 8; i++)
+    {
+        myWorld.deleteEntity(entities[i]);
+        entities.erase(entities.begin()+i);
+    }
+    
+    myWorld.printEntities();
+
+    
+    for(std::size_t i = 0; i < 10; i++)
+    {
+        entities.push_back(myWorld.newEntity());
+    }
+    
+    myWorld.printEntities();
+
+    for(std::size_t i = 0; i < entities.size(); i++)
+    {
+        myWorld.deleteEntity(entities[i]);
+    }
+    
+    myWorld.printEntities();
+    
+    auto myEntity = myWorld.newEntity();
+    auto myLight = myWorld.addComponent<Light>(myEntity);
+    
+    myWorld.printComponents();
+
+    
 }
 
 void Renderer::RenderFrame(void* passPtr, void* drawablePtr)

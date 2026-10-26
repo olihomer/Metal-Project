@@ -1,27 +1,38 @@
 //
-//  GameObject.hpp
+//  Entity.hpp
 //  Metal Project
 //
 //  Created by Oliver Homer on 20/10/2026.
 //
 
-#ifndef GameObject_hpp
-#define GameObject_hpp
+#ifndef Entity_hpp
+#define Entity_hpp
 
-#include <stdio.h>
 #include <vector>
 #include <string>
+#include "Pool.hpp"
+#include "ComponentReference.hpp"
+
+namespace ECS {
 
 class Entity
 {
 public:
+    Entity(Handle<Entity> handle, std::string name = "")
+    {
+        handle_ = handle;
+        entityName_ = name;
+    }
+    void print(){std::cout << components_.size() << std::endl;};
     
 private:
-    std::string objectName_;
-    std::uint32_t handle_;
-    std::uint32_t generation;
+    Handle<Entity> handle_;
+    std::string entityName_;
+    std::vector<ECS::ComponentReference> components_;
+    void registerComponent(ComponentReference component){components_.push_back(component);}
+    friend class EntityManager;
 };
 
+}
 
-
-#endif /* GameObject_hpp */
+#endif // !Entity_hpp

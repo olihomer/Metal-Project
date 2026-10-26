@@ -7,15 +7,7 @@
 
 #include "Pool.hpp"
 
-template<typename T>
-void Pool<T>::addElement()
-{
-    
-}
+namespace ECS {
 
 
-template<typename T>
-void Pool<T>::deleteElement()
-{
-    
 }

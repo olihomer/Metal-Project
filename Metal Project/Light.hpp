@@ -8,11 +8,14 @@
 #ifndef Light_hpp
 #define Light_hpp
 
-#include <stdio.h>
+#include "Pool.hpp"
 
 class Light
 {
-    
+public:
+    Light(ECS::Handle<Light> handle){handle_ = handle;};
+private:
+    ECS::Handle<Light> handle_;
 };
 
 #endif /* Light_hpp */

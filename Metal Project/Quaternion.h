@@ -4,29 +4,25 @@
 #include "Matrix4x4.h"
 
 constexpr auto DEG_RAD = 0.0174532925f;
-constexpr bool rLocal=true;
-constexpr bool rGlobal=false;
 
 class Quaternion {
 private:
-	float m_w; //real part
-	Vector3D m_v; //vector part
+	float w_; //real part
+	Vector3D v_; //vector part
 public:
-	Quaternion() :m_w(0.0f), m_v() {}
-	Quaternion(float w, Vector3D v) :m_w(w), m_v(v) {}
-	Quaternion(float w, float x, float y, float z) :m_w(w), m_v(Vector3D(x,y,z)) {}
+	Quaternion() :w_(0.0f), v_() {}
+	Quaternion(float w, Vector3D v) :w_(w), v_(v) {}
+	Quaternion(float w, float x, float y, float z) :w_(w), v_(Vector3D(x,y,z)) {}
 
-	Vector3D vectorPart(){return m_v;}
-	float realPart(){return m_w;}
+	Vector3D vectorPart(){return v_;}
+	float realPart(){return w_;}
 
 	Quaternion operator*(const Quaternion& q)
 	{
 		Quaternion t;
 		
-		Vector3D v = m_v * 1.0f;
-
-		t.m_w = m_w * q.m_w - Vector3D::dot(m_v, q.m_v);
-		t.m_v = (Vector3D(q.m_v) * m_w) + (Vector3D(m_v) * q.m_w) + Vector3D::cross(m_v, q.m_v);
+		t.w_ = w_ * q.w_ - Vector3D::dot(v_, q.v_);
+		t.v_ = (Vector3D(q.v_) * w_) + (Vector3D(v_) * q.w_) + Vector3D::cross(v_, q.v_);
 
 		return t;
 	}
@@ -34,43 +30,43 @@ public:
 	Quaternion operator+(const Quaternion& q)
 	{
 		Quaternion t;
-		t.m_w = m_w + q.m_w;
-		t.m_v = m_v + q.m_v;
+		t.w_ = w_ + q.w_;
+		t.v_ = v_ + q.v_;
 		return t;
 	}
 
 
 	void setIdentity()
 	{
-		m_w = 1.0f;
-		m_v = Vector3D(0, 0, 0);
+		w_ = 1.0f;
+		v_ = Vector3D(0, 0, 0);
 	}
 
 	float magnitude()
 	{
-		float vmag = m_v.magnitude();
+		float vmag = v_.magnitude();
 		vmag *= vmag;
-		vmag += m_w * m_w;
+		vmag += w_ * w_;
 		return sqrtf(vmag);
 	}
 
 
 	void setRotationAroundAxis(float theta, const Vector3D& axis) //RADIANS
 	{
-		m_w = cosf(0.5f * theta);
-		m_v.m_x = sinf(0.5f * theta) * axis.m_x;
-		m_v.m_y = sinf(0.5f * theta) * axis.m_y;
-		m_v.m_z = sinf(0.5f * theta) * axis.m_z;
+		w_ = cosf(0.5f * theta);
+		v_.x_ = sinf(0.5f * theta) * axis.x_;
+		v_.y_ = sinf(0.5f * theta) * axis.y_;
+		v_.z_ = sinf(0.5f * theta) * axis.z_;
 	}
 
 	static void rotatePointAroundVector(Vector3D& point, float theta, const Vector3D& axis) //RADIANS
 	{
 		Quaternion q,qbar;
 
-		q.m_w = cosf(0.5f * theta);
-		q.m_v.m_x = sinf(0.5f * theta) * axis.m_x;
-		q.m_v.m_y = sinf(0.5f * theta) * axis.m_y;
-		q.m_v.m_z = sinf(0.5f * theta) * axis.m_z;
+		q.w_ = cosf(0.5f * theta);
+		q.v_.x_ = sinf(0.5f * theta) * axis.x_;
+		q.v_.y_ = sinf(0.5f * theta) * axis.y_;
+		q.v_.z_ = sinf(0.5f * theta) * axis.z_;
 
 		qbar = q.getCongugate();
 
@@ -84,8 +80,8 @@ public:
 	Quaternion getCongugate()
 	{
 		Quaternion q;
-		q.m_w = m_w;
-		q.m_v = m_v*-1.0f;
+		q.w_ = w_;
+		q.v_ = v_*-1.0f;
 		return q;
 	}
 
@@ -93,36 +89,29 @@ public:
 	{
 		float mag;
 		mag = magnitude();
-		m_w *= (1/mag);
-		m_v = m_v*(1/mag);
-	}
-
-	void debugPrint(const char* txt)
-	{
-		char debug[100];
-		sprintf_s(debug, "%s\n%f %f %f %f, mag = %f\n",txt, m_w,m_v.m_x, m_v.m_y, m_v.m_z,this->magnitude());
-		OutputDebugString(debug);
+		w_ *= (1/mag);
+		v_ = v_*(1/mag);
 	}
 
 	Matrix4x4 toMatrix()
 	{
 		Matrix4x4 m;
-		float qw = m_w;
-		float qx = m_v.m_x;
-		float qy = m_v.m_y;
-		float qz = m_v.m_z;
+		float qw = w_;
+		float qx = v_.x_;
+		float qy = v_.y_;
+		float qz = v_.z_;
 
-		m.m_mat[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
-		m.m_mat[0][1] = 2 * qx * qy + 2 * qz * qw;
-		m.m_mat[0][2] = 2 * qx * qz - 2 * qy * qw;
+		m.mat_[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
+		m.mat_[0][1] = 2 * qx * qy + 2 * qz * qw;
+		m.mat_[0][2] = 2 * qx * qz - 2 * qy * qw;
 		
-		m.m_mat[1][0] = 2 * qx * qy - 2 * qz * qw;
-		m.m_mat[1][1] = 1 - 2 * qx * qx - 2 * qz * qz;
-		m.m_mat[1][2] = 2 * qy * qz + 2 * qx * qw;
+		m.mat_[1][0] = 2 * qx * qy - 2 * qz * qw;
+		m.mat_[1][1] = 1 - 2 * qx * qx - 2 * qz * qz;
+		m.mat_[1][2] = 2 * qy * qz + 2 * qx * qw;
 
-		m.m_mat[2][0] = 2 * qx * qz + 2 * qy * qw;
-		m.m_mat[2][1] = 2 * qy * qz - 2 * qx * qw;
-		m.m_mat[2][2] = 1 - 2 * qx * qx - 2 * qy * qy;
+		m.mat_[2][0] = 2 * qx * qz + 2 * qy * qw;
+		m.mat_[2][1] = 2 * qy * qz - 2 * qx * qw;
+		m.mat_[2][2] = 1 - 2 * qx * qx - 2 * qy * qy;
 		
 		return m;
 	}
@@ -131,37 +120,37 @@ public:
 	{
 		float t;
 	
-		if (m.m_mat[2][2] < 0)
+		if (m.mat_[2][2] < 0)
 		{
-			if (m.m_mat[0][0] > m.m_mat[1][1])
+			if (m.mat_[0][0] > m.mat_[1][1])
 			{
-				t = 1 + m.m_mat[0][0] - m.m_mat[1][1] - m.m_mat[2][2];
-				m_w = m.m_mat[1][2] - m.m_mat[2][1];
-				m_v = Vector3D(t, m.m_mat[0][1] + m.m_mat[1][0], m.m_mat[2][0] + m.m_mat[0][2]);
+				t = 1 + m.mat_[0][0] - m.mat_[1][1] - m.mat_[2][2];
+				w_ = m.mat_[1][2] - m.mat_[2][1];
+				v_ = Vector3D(t, m.mat_[0][1] + m.mat_[1][0], m.mat_[2][0] + m.mat_[0][2]);
 			}
 			else
 			{
-				t = 1 - m.m_mat[0][0] + m.m_mat[1][1] - m.m_mat[2][2];
-				m_w = m.m_mat[2][0] - m.m_mat[0][2];
-				m_v = Vector3D(m.m_mat[0][1] + m.m_mat[1][0], t,m.m_mat[1][2] + m.m_mat[2][1]);
+				t = 1 - m.mat_[0][0] + m.mat_[1][1] - m.mat_[2][2];
+				w_ = m.mat_[2][0] - m.mat_[0][2];
+				v_ = Vector3D(m.mat_[0][1] + m.mat_[1][0], t,m.mat_[1][2] + m.mat_[2][1]);
 			}
 		}
 		else
 		{
-			if (m.m_mat[0][0] < -m.m_mat[1][1])
+			if (m.mat_[0][0] < -m.mat_[1][1])
 			{
-				t = 1 - m.m_mat[0][0] - m.m_mat[1][1] + m.m_mat[2][2];
-				m_w = m.m_mat[0][1] - m.m_mat[1][0];
-				m_v = Vector3D(m.m_mat[2][0] + m.m_mat[0][2], m.m_mat[1][2] + m.m_mat[2][1],t);
+				t = 1 - m.mat_[0][0] - m.mat_[1][1] + m.mat_[2][2];
+				w_ = m.mat_[0][1] - m.mat_[1][0];
+				v_ = Vector3D(m.mat_[2][0] + m.mat_[0][2], m.mat_[1][2] + m.mat_[2][1],t);
 			}
 			else
 			{
-				t = 1 + m.m_mat[0][0] + m.m_mat[1][1] + m.m_mat[2][2];
-				m_w = t;
-				m_v = Vector3D(m.m_mat[1][2] - m.m_mat[2][1], m.m_mat[2][0] - m.m_mat[0][2], m.m_mat[0][1] - m.m_mat[1][0]);
+				t = 1 + m.mat_[0][0] + m.mat_[1][1] + m.mat_[2][2];
+				w_ = t;
+				v_ = Vector3D(m.mat_[1][2] - m.mat_[2][1], m.mat_[2][0] - m.mat_[0][2], m.mat_[0][1] - m.mat_[1][0]);
 			}
 		}
-		m_w *= (0.5f / sqrtf(t));
-		m_v = m_v * (0.5f / sqrtf(t));
+		w_ *= (0.5f / sqrtf(t));
+		v_ = v_ * (0.5f / sqrtf(t));
 	}
 };
