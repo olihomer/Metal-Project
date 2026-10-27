@@ -15,6 +15,7 @@
 #include "RigidBody.hpp"
 #include "Transform.hpp"
 #include "ComponentReference.hpp"
+#include <cxxabi.h>
 
 class World;
 
@@ -26,15 +27,18 @@ class Entity;
 class ComponentManager
 {
 private:
-    template<typename T>
-    ECS::Handle<T> addComponent(ECS::Handle<Entity> entity);
+    template<typename T, typename... Args>
+    ECS::Handle<T> addComponent(ECS::Handle<Entity> entity, Args&&... args);
     template<typename T>
     void deleteComponent(ECS::Handle<T> handle);
 
     void deleteComponents(const std::vector<ComponentReference>& components);
     
     template<typename T>
-    Pool<T>& GetPool();
+    Pool<T>& getPool();
+    
+    template<typename T>
+    void printComponents();
     
     Pool<Light> lights_;
     Pool<Mesh> meshes_;
@@ -45,19 +49,31 @@ private:
 };
 
 template<typename T>
-ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity)
+void ComponentManager::printComponents()
 {
-    return GetPool<T>().addElement();
+    if(getPool<T>().elements_.size() == 0)
+    {
+        std::cout << "No components of type " << abi::__cxa_demangle(typeid(T).name(),nullptr,nullptr,nullptr) << std::endl;
+    }
+    for(auto& element: getPool<T>().elements_)
+        element.print();
+}
+
+
+template<typename T, typename... Args>
+ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity, Args&&... args)
+{
+    return getPool<T>().addElement(std::forward<Args>(args)...);
 }
 
 template<typename T>
 void ComponentManager::deleteComponent(ECS::Handle<T> handle)
 {
-    return GetPool<T>().deleteElement(handle);
+    return getPool<T>().deleteElement(handle);
 }
 
 template<typename T>
-Pool<T>& ComponentManager::GetPool()
+Pool<T>& ComponentManager::getPool()
 {
     if constexpr (std::is_same_v<T, Light>) return lights_;
     else

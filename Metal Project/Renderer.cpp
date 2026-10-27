@@ -58,21 +58,25 @@ void Renderer::RunApp()
     std::cout << "RunApp()" << std::endl;
     World myWorld;
     
-    auto myEntity = myWorld.newEntity();
-    
-    std::cout << "1: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
-    
-    auto myLight = myWorld.addComponent<Light>(myEntity);
- 
-    std::cout << "2: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
-    std::cout << "3: " << myWorld.entityHasComponent<Mesh>(myEntity) << std::endl;
-    
-    myWorld.deleteComponent(myEntity, myLight);
+    auto myEntity = myWorld.newEntity("Dog");
 
-    std::cout << "4: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
+    myWorld.addComponent<Light>(myEntity);
+    myWorld.addComponent<Transform>(myEntity,Vector3D(1,2,3));
+    myWorld.addComponent<RigidBody>(myEntity);
+    myWorld.addComponent<Mesh>(myEntity);
+
+    myWorld.printEntities();
+    myWorld.printComponents<Light>();
+    myWorld.printComponents<Transform>();
+    myWorld.printComponents<RigidBody>();
+    myWorld.printComponents<Mesh>();
 
     myWorld.deleteEntity(myEntity);
 
+    myWorld.printComponents<Light>();
+    myWorld.printComponents<Transform>();
+    myWorld.printComponents<RigidBody>();
+    myWorld.printComponents<Mesh>();
     
 }
 

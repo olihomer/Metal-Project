@@ -8,11 +8,16 @@
 #ifndef RigidBody_hpp
 #define RigidBody_hpp
 
-#include <stdio.h>
+#include "Pool.hpp"
 
 class RigidBody
 {
-    
+public:
+    RigidBody(ECS::Handle<RigidBody> handle){handle_ = handle;};
+    void print(){std::cout << "RigidBody handle = " << handle_.slotIndex << std::endl;};
+
+private:
+    ECS::Handle<RigidBody> handle_;
 };
 
 #endif /* RigidBody_hpp */

@@ -23,7 +23,7 @@ public:
         handle_ = handle;
         entityName_ = name;
     }
-    void print(){std::cout << components_.size() << std::endl;};
+    void print(){std::cout << "Entity: " << entityName_ << " has " << components_.size() << " components."<< std::endl;};
 private:
     Handle<Entity> handle_;
     std::string entityName_;

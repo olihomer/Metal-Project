@@ -15,6 +15,8 @@
 
 namespace ECS {
 
+class Entity;
+
 template<typename T>
 struct Handle
 {
@@ -34,7 +36,8 @@ template<typename T>
 class Pool
 {
 public:
-    Handle<T> addElement();
+    template<typename... Args>
+    Handle<T> addElement(Args&&... args);
     void deleteElement(Handle<T> handle);
     T& get(Handle<T> handle);
     void print();
@@ -45,15 +48,21 @@ private:
     std::vector<Handle<T>> handles_; //vector of handles so that we can reverse lookup a slot/handle from an element/physical index
     std::queue<std::uint32_t> freeList_; //queue of available slot indexes
     bool validateHandle(Handle<T> handle);
+    friend class ComponentManager;
 };
 
 
 
 template<typename T>
-Handle<T> Pool<T>::addElement()
+template<typename... Args>
+Handle<T> Pool<T>::addElement(Args&&... args)
 {
     std::cout << "Adding Element" << std::endl;
     Handle<T> newHandle;
+    
+    auto backupSlots = slots_;
+    auto backupFreeList = freeList_;
+    auto backupHandles = handles_;
     
     if(freeList_.empty()) //no spare slots, so just add one at the end
     {
@@ -79,9 +88,23 @@ Handle<T> Pool<T>::addElement()
         newHandle.generation = freeSlot.generation;
         newHandle.slotIndex = slotIndex;
     }
-    elements_.emplace_back(newHandle);
-    handles_.push_back(newHandle);
+    try {
+        handles_.push_back(newHandle);
+    } catch (...) {
+        handles_=backupHandles;
+        slots_=backupSlots;
+        freeList_=backupFreeList;
+        throw(std::runtime_error("addElement failed to push new handle"));
+    }
     
+    try {
+        elements_.emplace_back(newHandle,std::forward<Args>(args)...);
+    } catch (...) {
+        handles_=backupHandles;
+        slots_=backupSlots;
+        freeList_=backupFreeList;
+        throw(std::runtime_error("addElement failed to emplace new element"));
+    }
     return newHandle;
 }
 
@@ -117,6 +140,12 @@ template<typename T>
 void Pool<T>::print()
 {
     std::cout << "Elements size: " << elements_.size() << std::endl;
+    
+    if constexpr (std::is_same_v<T,Entity>)
+    {
+        for(auto& element: elements_)
+            element.print();
+    }
     
     std::cout << "Slots: " << slots_.size() << std::endl;
     for(std::size_t i = 0; i < slots_.size(); i++)

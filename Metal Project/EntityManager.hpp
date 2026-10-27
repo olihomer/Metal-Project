@@ -55,11 +55,12 @@ void EntityManager::deRegisterComponent(ECS::Handle<ECS::Entity> entity, ECS::Ha
     std::size_t index = 0;
     for(ComponentReference component: entityComponentsList)
     {
-        if(component.type == componentReference.type && component.generation == componentReference.generation && component.slotIndex == componentReference.slotIndex)
+        if(component == componentReference)
         {
             entityComponentsList.erase(entityComponentsList.begin()+index);
             break;
         }
+        index++;
     }
 }
 

@@ -14,6 +14,7 @@ class Light
 {
 public:
     Light(ECS::Handle<Light> handle){handle_ = handle;};
+    void print(){std::cout << "Light handle = " << handle_.slotIndex << std::endl;};
 private:
     ECS::Handle<Light> handle_;
 };
