@@ -26,6 +26,11 @@ private:
     template<typename T>
     void deRegisterComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> component);
 
+    bool entityHasComponent(ECS::Handle<ECS::Entity> entity, ComponentType type);
+
+    template<typename T>
+    bool entityHasComponent(ECS::Handle<ECS::Entity> entity);
+
     const std::vector<ECS::ComponentReference>& listEntityComponents(ECS::Handle<ECS::Entity>);
     
     Pool<Entity> entities_;
@@ -56,6 +61,12 @@ void EntityManager::deRegisterComponent(ECS::Handle<ECS::Entity> entity, ECS::Ha
             break;
         }
     }
+}
+
+template<typename T>
+bool EntityManager::entityHasComponent(ECS::Handle<ECS::Entity> entity)
+{
+    return entities_.get(entity).hasComponent<T>();
 }
 
 

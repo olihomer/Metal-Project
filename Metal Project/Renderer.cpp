@@ -58,41 +58,21 @@ void Renderer::RunApp()
     std::cout << "RunApp()" << std::endl;
     World myWorld;
     
-    std::vector<ECS::Handle<ECS::Entity>> entities;
-    
-    for(std::size_t i = 0; i < 10; i++)
-    {
-        entities.push_back(myWorld.newEntity());
-    }
-
-    for(std::size_t i = 5; i < 8; i++)
-    {
-        myWorld.deleteEntity(entities[i]);
-        entities.erase(entities.begin()+i);
-    }
-    
-    
-    for(std::size_t i = 0; i < 10; i++)
-    {
-        entities.push_back(myWorld.newEntity());
-    }
-    
-
-    for(std::size_t i = 0; i < entities.size(); i++)
-    {
-        myWorld.deleteEntity(entities[i]);
-    }
-    
-    
     auto myEntity = myWorld.newEntity();
+    
+    std::cout << "1: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
+    
     auto myLight = myWorld.addComponent<Light>(myEntity);
+ 
+    std::cout << "2: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
+    std::cout << "3: " << myWorld.entityHasComponent<Mesh>(myEntity) << std::endl;
+    
     myWorld.deleteComponent(myEntity, myLight);
-    
-    myWorld.deleteEntity(myEntity);
-    
-    myWorld.printEntities();
 
-    myWorld.printComponents();
+    std::cout << "4: " << myWorld.entityHasComponent<Light>(myEntity) << std::endl;
+
+    myWorld.deleteEntity(myEntity);
+
     
 }
 

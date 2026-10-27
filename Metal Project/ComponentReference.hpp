@@ -23,26 +23,41 @@ enum class ComponentType {
     Transform
 };
 
+template<typename T>
+inline constexpr ComponentType componentType = []
+{
+    static_assert(false, "Unsupported component");
+    return ComponentType{};
+}();
+
+template<>
+inline constexpr ComponentType componentType<Light> = ComponentType::Light;
+
+template<>
+inline constexpr ComponentType componentType<Mesh> = ComponentType::Mesh;
+
+template<>
+inline constexpr ComponentType componentType<RigidBody> = ComponentType::RigidBody;
+
+template<>
+inline constexpr ComponentType componentType<Transform> = ComponentType::Transform;
+
 struct ComponentReference
 {
     ComponentType type;
     std::uint32_t slotIndex;
     std::uint32_t generation;
+    bool operator==(ComponentReference& rhs){return(slotIndex==rhs.slotIndex&&generation==rhs.generation&&type==rhs.type);}
 };
 
 template<typename T>
 ComponentReference referenceFromHandle(ECS::Handle<T> handle)
 {
-    ComponentReference temp;
-    temp.generation = handle.generation;
-    temp.slotIndex = handle.slotIndex;
-    
-    if constexpr (std::is_same_v<T, Light>) temp.type = ComponentType::Light;
-    if constexpr (std::is_same_v<T, Mesh>) temp.type = ComponentType::Mesh;
-    if constexpr (std::is_same_v<T, RigidBody>) temp.type = ComponentType::RigidBody;
-    if constexpr (std::is_same_v<T, Transform>) temp.type = ComponentType::Transform;
-    
-    return temp;
+    return {
+        componentType<T>,
+        handle.slotIndex,
+        handle.generation
+    };
 }
 
 }

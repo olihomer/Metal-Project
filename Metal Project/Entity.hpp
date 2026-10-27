@@ -24,15 +24,27 @@ public:
         entityName_ = name;
     }
     void print(){std::cout << components_.size() << std::endl;};
-    
 private:
     Handle<Entity> handle_;
     std::string entityName_;
     std::vector<ECS::ComponentReference> components_;
     void registerComponent(ComponentReference component){components_.push_back(component);}
+    bool hasComponent(ComponentType type);
+
+    template<typename T>
+    bool hasComponent();
+
     friend class EntityManager;
 };
 
+template<typename T>
+bool Entity::hasComponent()
+{
+    for(auto component: components_)
+        if(component.type == componentType<T>) return true;
+    return false;
 }
 
+
+}
 #endif // !Entity_hpp
