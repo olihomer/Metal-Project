@@ -53,7 +53,7 @@ void ComponentManager::printComponents()
 {
     if(getPool<T>().elements_.size() == 0)
     {
-        std::cout << "No components of type " << abi::__cxa_demangle(typeid(T).name(),nullptr,nullptr,nullptr) << std::endl;
+        std::cout << "No components of type " << typeid(T).name() << std::endl;
     }
     for(auto& element: getPool<T>().elements_)
         element.print();
@@ -63,7 +63,7 @@ void ComponentManager::printComponents()
 template<typename T, typename... Args>
 ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity, Args&&... args)
 {
-    return getPool<T>().addElement(std::forward<Args>(args)...);
+    return getPool<T>().addElement(entity,std::forward<Args>(args)...);
 }
 
 template<typename T>
