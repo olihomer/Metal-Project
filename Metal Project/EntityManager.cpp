@@ -12,7 +12,9 @@ namespace ECS {
 
 Handle<Entity> EntityManager::newEntity(std::string name)
 {
-    return entities_.addElement(name);
+    auto handle = entities_.addElement(name);
+    entities_.setOwner(handle, handle);
+    return handle;
 }
 
 void EntityManager::deleteEntity(Handle<Entity> handle)

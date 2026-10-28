@@ -13,11 +13,10 @@
 class RigidBody
 {
 public:
-    RigidBody(ECS::Handle<RigidBody> handle){handle_ = handle;};
-    void print(){std::cout << "RigidBody handle = " << handle_.slotIndex << std::endl;};
+    RigidBody(){;};
+    void print(){std::cout << "RigidBody  = " << std::endl;};
 
 private:
-    ECS::Handle<RigidBody> handle_;
 };
 
 #endif /* RigidBody_hpp */

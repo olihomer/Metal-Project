@@ -18,14 +18,12 @@ namespace ECS {
 class Entity
 {
 public:
-    Entity(Handle<Entity> handle, std::string name = "")
+    Entity(std::string name = "")
     {
-        handle_ = handle;
         entityName_ = name;
     }
     void print(){std::cout << "Entity: " << entityName_ << " has " << components_.size() << " components."<< std::endl;};
 private:
-    Handle<Entity> handle_;
     std::string entityName_;
     std::vector<ECS::ComponentReference> components_;
     void registerComponent(ComponentReference component){components_.push_back(component);}

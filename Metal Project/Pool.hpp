@@ -38,11 +38,10 @@ class Pool
 {
 public:
     template<typename... Args>
-    Handle<T> addElement(Handle<Entity>,Args&&... args); //adds element with an owning entity
-    template<typename... Args>
     Handle<T> addElement(Args&&... args); //adds element with no owning entity
     
     void deleteElement(Handle<T> handle);
+    void setOwner(Handle<T> handle, Handle<Entity> owner);
     T& get(Handle<T> handle);
     void print();
     
@@ -59,115 +58,68 @@ private:
 
 template<typename T>
 template<typename... Args>
-Handle<T> Pool<T>::addElement(Handle<Entity> entity,Args&&... args)
-{
-    std::cout << "Adding Element" << std::endl;
-    Handle<T> newHandle;
-    
-    auto backupSlots = slots_;
-    auto backupFreeList = freeList_;
-    auto backupHandles = handles_;
-    
-    if(freeList_.empty()) //no spare slots, so just add one at the end
-    {
-        Slot newSlot;
-        newSlot.owner = entity;
-        newSlot.isActive = true;
-        newSlot.generation = 0;
-        newSlot.physicalIndex = std::uint32_t(elements_.size());
-        slots_.push_back(newSlot);
-        
-        newHandle.generation = 0;
-        newHandle.slotIndex = std::uint32_t(slots_.size() - 1);
-    }
-    else //get first spare slot index from freeList
-    {
-        auto slotIndex = freeList_.front();
-        freeList_.pop();
-        
-        Slot& freeSlot = slots_[slotIndex];
-        freeSlot.owner = entity;
-        freeSlot.isActive = true;
-        freeSlot.generation++;
-        freeSlot.physicalIndex = std::uint32_t(elements_.size());
-        
-        newHandle.generation = freeSlot.generation;
-        newHandle.slotIndex = slotIndex;
-    }
-    try {
-        handles_.push_back(newHandle);
-    } catch (...) {
-        handles_=backupHandles;
-        slots_=backupSlots;
-        freeList_=backupFreeList;
-        throw(std::runtime_error("addElement failed to push new handle"));
-    }
-    
-    try {
-        elements_.emplace_back(newHandle,std::forward<Args>(args)...);
-    } catch (...) {
-        handles_=backupHandles;
-        slots_=backupSlots;
-        freeList_=backupFreeList;
-        throw(std::runtime_error("addElement failed to emplace new element"));
-    }
-    return newHandle;
-}
-
-
-template<typename T>
-template<typename... Args>
 Handle<T> Pool<T>::addElement(Args&&... args)
 {
     std::cout << "Adding Element" << std::endl;
     Handle<T> newHandle;
-    
-    auto backupSlots = slots_;
-    auto backupFreeList = freeList_;
-    auto backupHandles = handles_;
-    
+        
     if(freeList_.empty()) //no spare slots, so just add one at the end
     {
         Slot newSlot;
         newSlot.isActive = true;
         newSlot.generation = 0;
         newSlot.physicalIndex = std::uint32_t(elements_.size());
-        slots_.push_back(newSlot);
         
         newHandle.generation = 0;
         newHandle.slotIndex = std::uint32_t(slots_.size() - 1);
+        
+        slots_.push_back(newSlot);
+        try{
+            handles_.push_back(newHandle);
+        }
+        catch(...){
+            slots_.erase(slots_.end()-1); //undo the slot push_back
+            std::rethrow_exception(std::current_exception());
+        }
+        
+        try{
+            elements_.emplace_back(std::forward<Args>(args)...);
+        }
+        catch(...){
+            slots_.erase(slots_.end()-1); //undo the slot push_back
+            handles_.erase(handles_.end()-1); //undo the handle push_back
+            std::rethrow_exception(std::current_exception());
+        }
     }
     else //get first spare slot index from freeList
     {
         auto slotIndex = freeList_.front();
-        freeList_.pop();
+
+        Slot freeSlot = slots_[slotIndex];
         
-        Slot& freeSlot = slots_[slotIndex];
         freeSlot.isActive = true;
         freeSlot.generation++;
         freeSlot.physicalIndex = std::uint32_t(elements_.size());
         
         newHandle.generation = freeSlot.generation;
         newHandle.slotIndex = slotIndex;
+        
+        handles_.push_back(newHandle); //CAN THROW BUT DOESN'T MATTER
+        try{
+            elements_.emplace_back(std::forward<Args>(args)...);
+        }
+        catch(...)
+        {
+            handles_.erase(handles_.end()-1); //undo the handle push_back
+            std::rethrow_exception(std::current_exception());
+        }
+        
+        //do these things last
+        
+        freeList_.pop(); // CANNOT THROW
+        slots_[slotIndex] = std::move(freeSlot);
     }
-    try {
-        handles_.push_back(newHandle);
-    } catch (...) {
-        handles_=backupHandles;
-        slots_=backupSlots;
-        freeList_=backupFreeList;
-        throw(std::runtime_error("addElement failed to push new handle"));
-    }
-    
-    try {
-        elements_.emplace_back(newHandle,std::forward<Args>(args)...);
-    } catch (...) {
-        handles_=backupHandles;
-        slots_=backupSlots;
-        freeList_=backupFreeList;
-        throw(std::runtime_error("addElement failed to emplace new element"));
-    }
-    slots_[newHandle.slotIndex].owner = newHandle; //no owner provided so set owner to self
+
     return newHandle;
 }
 
@@ -259,6 +211,12 @@ T& Pool<T>::get(Handle<T> handle)
     
     Slot& s = slots_[handle.slotIndex];
     return elements_[s.physicalIndex];
+}
+
+template<typename T>
+void Pool<T>::setOwner(Handle<T> handle, Handle<Entity> owner)
+{
+    slots_[handle.slotIndex].owner = owner;
 }
 
 

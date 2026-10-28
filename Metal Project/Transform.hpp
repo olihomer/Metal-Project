@@ -17,12 +17,11 @@ class Transform
 {
     
 public:
-    Transform(ECS::Handle<Transform> handle, Vector3D position = {}, Quaternion rotation = {})
-    :handle_(handle),position_(position), rotation_(rotation)
+    Transform(Vector3D position = {}, Quaternion rotation = {})
+    :position_(position), rotation_(rotation)
     {};
-    void print(){std::cout << "Transform handle = " << handle_.slotIndex <<  ". Position = " << position_.x_ << "," << position_.y_ << "," << position_.z_ << std::endl;}
+    void print(){std::cout << "Transform position = " << position_.x_ << "," << position_.y_ << "," << position_.z_ << std::endl;}
 private:
-    ECS::Handle<Transform> handle_;
     Vector3D position_;
     Quaternion rotation_;
     

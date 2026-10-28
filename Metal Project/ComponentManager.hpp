@@ -63,7 +63,9 @@ void ComponentManager::printComponents()
 template<typename T, typename... Args>
 ECS::Handle<T> ComponentManager::addComponent(ECS::Handle<Entity> entity, Args&&... args)
 {
-    return getPool<T>().addElement(entity,std::forward<Args>(args)...);
+    auto handle = getPool<T>().addElement(std::forward<Args>(args)...);
+    getPool<T>().setOwner(handle,entity);
+    return handle;
 }
 
 template<typename T>

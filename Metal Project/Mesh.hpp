@@ -13,11 +13,10 @@
 class Mesh
 {
 public:
-    Mesh(ECS::Handle<Mesh> handle){handle_ = handle;};
-    void print(){std::cout << "Mesh handle = " << handle_.slotIndex << std::endl;};
+    Mesh(){;};
+    void print(){std::cout << "Mesh  = " << std::endl;};
 
 private:
-    ECS::Handle<Mesh> handle_;
 };
 
 #endif /* Mesh_hpp */
