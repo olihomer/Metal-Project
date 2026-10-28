@@ -31,6 +31,10 @@ private:
 
     template<typename T>
     bool hasComponent(ECS::Handle<ECS::Entity> entity);
+    
+    template<typename... Ts>
+    bool hasAllComponents(ECS::Handle<ECS::Entity> entity);
+        
     template<typename T>
     ComponentReference getComponent(ECS::Handle<ECS::Entity> entity);
     
@@ -80,6 +84,13 @@ ComponentReference EntityManager::getComponent(ECS::Handle<ECS::Entity> entity)
 {
     return entities_.get(entity).getComponent<T>();
 }
+
+template<typename... Ts>
+bool EntityManager::hasAllComponents(ECS::Handle<ECS::Entity> entity)
+{
+    return (hasComponent<Ts>(entity) && ...);
+}
+
 
 
 }

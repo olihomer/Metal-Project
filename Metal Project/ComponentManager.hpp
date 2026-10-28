@@ -46,6 +46,9 @@ private:
     template<typename T>
     void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
     
+    template<typename... Ts>
+    void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback);
+    
     
     Pool<Light> lights_;
     Pool<Mesh> meshes_;
@@ -115,6 +118,14 @@ void ComponentManager::each(std::function<void(ECS::Handle<ECS::Entity>,T&)> cal
     }
     
 }
+
+
+template<typename... Ts>
+void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback)
+{
+    
+}
+
 
 }
 #endif /* ComponentManager_hpp */

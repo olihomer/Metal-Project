@@ -33,10 +33,14 @@ public:
     void deleteComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> handle);
     template<typename T>
     bool hasComponent(ECS::Handle<ECS::Entity> entity);
+    template<typename... Ts>
+    bool hasAllComponents(ECS::Handle<ECS::Entity> entity);
     template<typename T>
     T* getComponent(ECS::Handle<ECS::Entity> entity);
     template<typename T>
     void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
+    template<typename... Ts>
+    void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback);
 
     bool hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
@@ -101,6 +105,16 @@ void World::each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback)
     componentManager_.each(callback);
 }
 
+template<typename... Ts>
+bool World::hasAllComponents(ECS::Handle<ECS::Entity> entity)
+{
+    return entityManager_.hasAllComponents<Ts...>(entity);
+}
 
+template<typename... Ts>
+void World::each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback)
+{
+    componentManager_.each(callback);
+}
 
 #endif /* World_hpp */

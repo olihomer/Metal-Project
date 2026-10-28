@@ -63,6 +63,11 @@ void Renderer::RunApp()
     auto myEntity3 = myWorld.newEntity("Fish");
 
     myWorld.addComponent<Transform>(myEntity,Vector3D(1,2,3));
+    myWorld.addComponent<Mesh>(myEntity);
+    myWorld.addComponent<Light>(myEntity);
+    
+    std::cout << "hasAllComponents: "<< myWorld.hasAllComponents<Light,Mesh,Transform,RigidBody>(myEntity) << std::endl;
+    
     myWorld.addComponent<Transform>(myEntity2,Vector3D(11,22,33));
     myWorld.addComponent<Transform>(myEntity3,Vector3D(111,222,333));
 
