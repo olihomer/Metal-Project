@@ -49,7 +49,13 @@ ECS::Handle<T> World::addComponent(ECS::Handle<ECS::Entity> entity, Args&&... ar
 {
     if(entityHasComponent<T>(entity))throw(std::runtime_error("Entity cannot have more than one instance of a given component type"));
     auto component = componentManager_.addComponent<T>(entity,std::forward<Args>(args)...);
-    entityManager_.registerComponent<T>(entity, component);
+    try{
+        entityManager_.registerComponent<T>(entity, component);
+    }
+    catch(...){
+        componentManager_.deleteComponent(component);
+        throw;
+    }
     return component;
 }
 

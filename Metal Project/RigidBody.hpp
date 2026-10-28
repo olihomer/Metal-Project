@@ -14,6 +14,7 @@ class RigidBody
 {
 public:
     RigidBody(){;};
+
     void print(){std::cout << "RigidBody  = " << std::endl;};
 
 private:

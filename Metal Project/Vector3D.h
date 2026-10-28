@@ -12,8 +12,7 @@
 		{}
 		Vector3D(float x, float y, float z) :x_(x), y_(y), z_(z)
 		{}
-		Vector3D(const Vector3D& vector) :x_(vector.x_), y_(vector.y_), z_(vector.z_)
-		{}
+
 
 		static float dot(const Vector3D& u, const Vector3D& v)
 		{

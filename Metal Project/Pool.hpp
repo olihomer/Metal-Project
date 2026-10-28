@@ -36,6 +36,9 @@ struct Slot
 template<typename T>
 class Pool
 {
+    static_assert(std::is_nothrow_move_constructible_v<T>,"Pool elements must be nothrow move constructible");
+    static_assert(std::is_nothrow_move_assignable_v<T>,"Pool elements must be nothrow move assignable");
+    
 public:
     template<typename... Args>
     Handle<T> addElement(Args&&... args); //adds element with no owning entity
@@ -71,24 +74,24 @@ Handle<T> Pool<T>::addElement(Args&&... args)
         newSlot.physicalIndex = std::uint32_t(elements_.size());
         
         newHandle.generation = 0;
-        newHandle.slotIndex = std::uint32_t(slots_.size() - 1);
+        newHandle.slotIndex = std::uint32_t(slots_.size());
         
         slots_.push_back(newSlot);
         try{
             handles_.push_back(newHandle);
         }
         catch(...){
-            slots_.erase(slots_.end()-1); //undo the slot push_back
-            std::rethrow_exception(std::current_exception());
+            slots_.pop_back(); //undo the slot push_back
+            throw;
         }
         
         try{
             elements_.emplace_back(std::forward<Args>(args)...);
         }
         catch(...){
-            slots_.erase(slots_.end()-1); //undo the slot push_back
-            handles_.erase(handles_.end()-1); //undo the handle push_back
-            std::rethrow_exception(std::current_exception());
+            slots_.pop_back(); //undo the slot push_back
+            handles_.pop_back(); //undo the handle push_back
+            throw;
         }
     }
     else //get first spare slot index from freeList
@@ -108,10 +111,9 @@ Handle<T> Pool<T>::addElement(Args&&... args)
         try{
             elements_.emplace_back(std::forward<Args>(args)...);
         }
-        catch(...)
-        {
-            handles_.erase(handles_.end()-1); //undo the handle push_back
-            std::rethrow_exception(std::current_exception());
+        catch(...){
+            handles_.pop_back(); //undo the handle push_back
+            throw;
         }
         
         //do these things last
@@ -216,7 +218,10 @@ T& Pool<T>::get(Handle<T> handle)
 template<typename T>
 void Pool<T>::setOwner(Handle<T> handle, Handle<Entity> owner)
 {
-    slots_[handle.slotIndex].owner = owner;
+    if(validateHandle(handle))
+        slots_[handle.slotIndex].owner = owner;
+    else
+        throw(std::runtime_error("invalid handle passed to setowner"));
 }
 
 

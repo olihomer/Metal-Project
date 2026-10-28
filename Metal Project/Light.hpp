@@ -13,7 +13,7 @@
 class Light
 {
 public:
-    Light(){;};
+    Light(){};
     void print(){std::cout << "Light = " << std::endl;};
 private:
 
