@@ -9,6 +9,7 @@
 #define World_hpp
 
 #include <vector>
+#include <functional>
 #include "Pool.hpp"
 #include "RigidBody.hpp"
 #include "Mesh.hpp"
@@ -23,21 +24,23 @@ class World
 public:
     World(){};
     ECS::Handle<ECS::Entity> newEntity(std::string name = "Unnamed");
+
+    template<typename T>
+    void printComponents(){componentManager_.printComponents<T>();}
     template<typename T, typename... Args>
     ECS::Handle<T> addComponent(ECS::Handle<ECS::Entity> entity, Args&&... args);
     template<typename T>
     void deleteComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> handle);
-
-    bool entityHasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
-    
     template<typename T>
-    bool entityHasComponent(ECS::Handle<ECS::Entity> entity);
+    bool hasComponent(ECS::Handle<ECS::Entity> entity);
+    template<typename T>
+    T* getComponent(ECS::Handle<ECS::Entity> entity);
+    template<typename T>
+    void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
 
+    bool hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
-
     void printEntities(){entityManager_.entities_.print();}
-    template<typename T>
-    void printComponents(){componentManager_.printComponents<T>();}
 
 private:
     ECS::EntityManager entityManager_;
@@ -47,7 +50,7 @@ private:
 template<typename T, typename... Args>
 ECS::Handle<T> World::addComponent(ECS::Handle<ECS::Entity> entity, Args&&... args)
 {
-    if(entityHasComponent<T>(entity))throw(std::runtime_error("Entity cannot have more than one instance of a given component type"));
+    if(hasComponent<T>(entity))throw(std::runtime_error("Entity cannot have more than one instance of a given component type"));
     auto component = componentManager_.addComponent<T>(entity,std::forward<Args>(args)...);
     try{
         entityManager_.registerComponent<T>(entity, component);
@@ -76,10 +79,28 @@ void World::deleteComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> hand
 }
 
 template<typename T>
-bool World::entityHasComponent(ECS::Handle<ECS::Entity> entity)
+bool World::hasComponent(ECS::Handle<ECS::Entity> entity)
 {
-    return entityManager_.entityHasComponent<T>(entity);
+    return entityManager_.hasComponent<T>(entity);
 }
+
+
+template<typename T>
+T* World::getComponent(ECS::Handle<ECS::Entity> entity)
+{
+    if(!entityManager_.hasComponent<T>(entity))return nullptr;
+    ECS::ComponentReference component = entityManager_.getComponent<T>(entity);
+    ECS::Handle<T> handle = {component.slotIndex,component.generation};
+    return componentManager_.getComponent(handle);
+}
+
+
+template<typename T>
+void World::each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback)
+{
+    componentManager_.each(callback);
+}
+
 
 
 #endif /* World_hpp */

@@ -12,6 +12,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include "Pool.hpp"
+#include "Transform.hpp"
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>

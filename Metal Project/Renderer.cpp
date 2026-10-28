@@ -59,18 +59,30 @@ void Renderer::RunApp()
     World myWorld;
     
     auto myEntity = myWorld.newEntity("Dog");
+    auto myEntity2 = myWorld.newEntity("Cat");
+    auto myEntity3 = myWorld.newEntity("Fish");
 
-    myWorld.addComponent<Light>(myEntity);
     myWorld.addComponent<Transform>(myEntity,Vector3D(1,2,3));
-    myWorld.addComponent<RigidBody>(myEntity);
-    myWorld.addComponent<Mesh>(myEntity);
+    myWorld.addComponent<Transform>(myEntity2,Vector3D(11,22,33));
+    myWorld.addComponent<Transform>(myEntity3,Vector3D(111,222,333));
 
+    
     myWorld.printEntities();
-    myWorld.printComponents<Light>();
     myWorld.printComponents<Transform>();
-    myWorld.printComponents<RigidBody>();
-    myWorld.printComponents<Mesh>();
 
+    Transform* transform = myWorld.getComponent<Transform>(myEntity);
+    if(transform)
+    {
+        std::cout << "Obtained transform: ";
+        transform->print();
+    }
+    else
+    {
+        std::cout << "No transform found" << std::endl;
+    }
+    
+    myWorld.each<Transform>([&](ECS::Handle<ECS::Entity> entity, Transform& transform){std::cout<<"Each"<<std::endl;});
+    
     myWorld.deleteEntity(myEntity);
 
     myWorld.printComponents<Light>();
@@ -79,6 +91,7 @@ void Renderer::RunApp()
     myWorld.printComponents<Mesh>();
     
 }
+
 
 void Renderer::RenderFrame(void* passPtr, void* drawablePtr)
 {

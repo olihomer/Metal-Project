@@ -31,14 +31,21 @@ private:
     ECS::Handle<T> addComponent(ECS::Handle<Entity> entity, Args&&... args);
     template<typename T>
     void deleteComponent(ECS::Handle<T> handle);
-
+    
     void deleteComponents(const std::vector<ComponentReference>& components);
     
     template<typename T>
     Pool<T>& getPool();
     
     template<typename T>
+    T* getComponent(ECS::Handle<T> handle);
+    
+    template<typename T>
     void printComponents();
+    
+    template<typename T>
+    void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
+    
     
     Pool<Light> lights_;
     Pool<Mesh> meshes_;
@@ -80,15 +87,34 @@ Pool<T>& ComponentManager::getPool()
     if constexpr (std::is_same_v<T, Light>) return lights_;
     else
         if constexpr (std::is_same_v<T, Mesh>) return meshes_;
-    else
-        if constexpr (std::is_same_v<T, RigidBody>) return rigidBodies_;
-    else
-        if constexpr (std::is_same_v<T, Transform>) return transforms_;
-    else
-        static_assert(false, "Unsupported pool type");
+        else
+            if constexpr (std::is_same_v<T, RigidBody>) return rigidBodies_;
+            else
+                if constexpr (std::is_same_v<T, Transform>) return transforms_;
+                else
+                    static_assert(false, "Unsupported pool type");
 }
 
 
+template<typename T>
+T* ComponentManager::getComponent(ECS::Handle<T> handle)
+{
+    return &(getPool<T>().elements_[handle.slotIndex]);
 }
 
+
+template<typename T>
+void ComponentManager::each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback)
+{
+    ECS::Pool<T>& pool = getPool<T>();
+    for(std::size_t i = 0; i < pool.elements_.size(); i++)
+    {
+        auto handle = pool.handles_[i];
+        auto slotIndex = handle.slotIndex;
+        callback(pool.slots_[slotIndex].owner,pool.elements_[i]);
+    }
+    
+}
+
+}
 #endif /* ComponentManager_hpp */

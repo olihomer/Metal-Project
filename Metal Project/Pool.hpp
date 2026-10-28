@@ -20,8 +20,8 @@ class Entity;
 template<typename T>
 struct Handle
 {
-    std::uint32_t slotIndex; //points to a slot
-    std::uint32_t generation;
+    std::uint32_t slotIndex = UINT32_MAX; //points to a slot
+    std::uint32_t generation = 0;
     void print(){std::cout<<"Handle: "<<slotIndex<<" / "<<generation<<std::endl;};
 };
 
@@ -45,6 +45,7 @@ public:
     
     void deleteElement(Handle<T> handle);
     void setOwner(Handle<T> handle, Handle<Entity> owner);
+    Handle<Entity> getOwner(Handle<T>);
     T& get(Handle<T> handle);
     void print();
     
@@ -68,7 +69,7 @@ Handle<T> Pool<T>::addElement(Args&&... args)
         
     if(freeList_.empty()) //no spare slots, so just add one at the end
     {
-        Slot newSlot;
+        Slot newSlot{};
         newSlot.isActive = true;
         newSlot.generation = 0;
         newSlot.physicalIndex = std::uint32_t(elements_.size());
@@ -136,8 +137,9 @@ void Pool<T>::deleteElement(Handle<T> handle)
         throw std::runtime_error("Pool::deleteElement() with stale handle");
     
     Slot& deadSlot = slots_[handle.slotIndex];
-    deadSlot.isActive = false; //mark slot inactive
     freeList_.push(handle.slotIndex); //add slot to free list
+    deadSlot.isActive = false; //mark slot inactive
+
     
     //pop and swap elements
 
@@ -222,6 +224,14 @@ void Pool<T>::setOwner(Handle<T> handle, Handle<Entity> owner)
         slots_[handle.slotIndex].owner = owner;
     else
         throw(std::runtime_error("invalid handle passed to setowner"));
+}
+
+template<typename T>
+Handle<Entity> Pool<T>::getOwner(Handle<T> handle)
+{
+    if(!validateHandle(handle))
+        throw std::runtime_error("Pool::getOwner() with stale handle");
+    return slots_[handle.slotIndex].owner;
 }
 
 

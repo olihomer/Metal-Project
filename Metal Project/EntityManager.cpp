@@ -28,7 +28,7 @@ const std::vector<ECS::ComponentReference>& EntityManager::listEntityComponents(
     return entityReference.components_;
 }
 
-bool EntityManager::entityHasComponent(ECS::Handle<ECS::Entity> entity, ComponentType type)
+bool EntityManager::hasComponent(ECS::Handle<ECS::Entity> entity, ComponentType type)
 {
     return entities_.get(entity).hasComponent(type);
 }

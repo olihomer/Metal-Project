@@ -31,6 +31,8 @@ private:
 
     template<typename T>
     bool hasComponent();
+    template<typename T>
+    ComponentReference getComponent();
 
     friend class EntityManager;
 };
@@ -41,6 +43,15 @@ bool Entity::hasComponent()
     for(auto component: components_)
         if(component.type == componentType<T>) return true;
     return false;
+}
+
+template<typename T>
+ComponentReference Entity::getComponent()
+{
+    for(auto component: components_)
+        if(component.type == componentType<T>) return component;
+    
+    throw(std::runtime_error("Couldn't get component"));
 }
 
 

@@ -10,6 +10,7 @@
 
 #include "Pool.hpp"
 #include "Entity.hpp"
+#include <functional>
 
 class World;
 
@@ -26,14 +27,17 @@ private:
     template<typename T>
     void deRegisterComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> component);
 
-    bool entityHasComponent(ECS::Handle<ECS::Entity> entity, ComponentType type);
+    bool hasComponent(ECS::Handle<ECS::Entity> entity, ComponentType type);
 
     template<typename T>
-    bool entityHasComponent(ECS::Handle<ECS::Entity> entity);
-
+    bool hasComponent(ECS::Handle<ECS::Entity> entity);
+    template<typename T>
+    ComponentReference getComponent(ECS::Handle<ECS::Entity> entity);
+    
     const std::vector<ECS::ComponentReference>& listEntityComponents(ECS::Handle<ECS::Entity>);
     
     Pool<Entity> entities_;
+    std::function<void()> beforeComponentRegistration_;
     friend class ::World;
 };
 
@@ -41,6 +45,7 @@ private:
 template<typename T>
 void EntityManager::registerComponent(ECS::Handle<ECS::Entity> entity, ECS::Handle<T> component)
 {
+    if(beforeComponentRegistration_) beforeComponentRegistration_();
     ComponentReference componentReference = referenceFromHandle(component);
     auto& entityReference = entities_.get(entity);
     entityReference.components_.push_back(componentReference);
@@ -65,9 +70,15 @@ void EntityManager::deRegisterComponent(ECS::Handle<ECS::Entity> entity, ECS::Ha
 }
 
 template<typename T>
-bool EntityManager::entityHasComponent(ECS::Handle<ECS::Entity> entity)
+bool EntityManager::hasComponent(ECS::Handle<ECS::Entity> entity)
 {
     return entities_.get(entity).hasComponent<T>();
+}
+
+template<typename T>
+ComponentReference EntityManager::getComponent(ECS::Handle<ECS::Entity> entity)
+{
+    return entities_.get(entity).getComponent<T>();
 }
 
 

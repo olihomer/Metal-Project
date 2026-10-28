@@ -21,7 +21,7 @@ void World::deleteEntity(ECS::Handle<ECS::Entity> handle)
 }
 
 
-bool World::entityHasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type)
+bool World::hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type)
 {
-    return entityManager_.entityHasComponent(entity, type);
+    return entityManager_.hasComponent(entity, type);
 }
