@@ -20,11 +20,10 @@
 #include <QuartzCore/QuartzCore.hpp>
 
 
-class Renderer
+class RenderSystem
 {
 public:
-    Renderer(MTL::Device* device);
-    void RunApp();
+    RenderSystem(MTL::Device* device);
     void RenderFrame(void* pass, void* drawable);
     
 private:

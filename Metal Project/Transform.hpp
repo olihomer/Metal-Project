@@ -21,7 +21,7 @@ public:
     :position_(position), rotation_(rotation)
     {};
     void print(){std::cout << "Transform position = " << position_.x_ << "," << position_.y_ << "," << position_.z_ << std::endl;}
-private:
+public:
     Vector3D position_;
     Quaternion rotation_;
     

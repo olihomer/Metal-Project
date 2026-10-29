@@ -8,7 +8,8 @@
 #ifndef BridgingHeader_h
 #define BridgingHeader_h
 
-#include "Renderer.hpp"
+#include "RenderSystem.hpp"
+#include "Engine.hpp"
 
 
 #endif /* BridgingHeader_h */

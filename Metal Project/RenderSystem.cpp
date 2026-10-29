@@ -10,7 +10,7 @@
 #define CA_PRIVATE_IMPLEMENTATION
 
 
-#include "Renderer.hpp"
+#include "RenderSystem.hpp"
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -21,7 +21,7 @@
 
 
 
-Renderer::Renderer(MTL::Device* device)
+RenderSystem::RenderSystem(MTL::Device* device)
 :device_(NS::RetainPtr(device))
 {
     //Initialise Metal Objects
@@ -53,52 +53,8 @@ Renderer::Renderer(MTL::Device* device)
 
 }
 
-void Renderer::RunApp()
-{
-    std::cout << "RunApp()" << std::endl;
-    World myWorld;
-    
-    auto myEntity = myWorld.newEntity("Dog");
-    auto myEntity2 = myWorld.newEntity("Cat");
-    auto myEntity3 = myWorld.newEntity("Fish");
 
-    myWorld.addComponent<Transform>(myEntity,Vector3D(1,2,3));
-    myWorld.addComponent<Mesh>(myEntity);
-    myWorld.addComponent<Light>(myEntity);
-    
-    std::cout << "hasAllComponents: "<< myWorld.hasAllComponents<Light,Mesh,Transform,RigidBody>(myEntity) << std::endl;
-    
-    myWorld.addComponent<Transform>(myEntity2,Vector3D(11,22,33));
-    myWorld.addComponent<Transform>(myEntity3,Vector3D(111,222,333));
-
-    
-    myWorld.printEntities();
-    myWorld.printComponents<Transform>();
-
-    Transform* transform = myWorld.getComponent<Transform>(myEntity);
-    if(transform)
-    {
-        std::cout << "Obtained transform: ";
-        transform->print();
-    }
-    else
-    {
-        std::cout << "No transform found" << std::endl;
-    }
-    
-    myWorld.each<Transform,Mesh,Light>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh, Light& light){std::cout<<"Each"<<std::endl;});
-    
-    myWorld.deleteEntity(myEntity);
-
-    myWorld.printComponents<Light>();
-    myWorld.printComponents<Transform>();
-    myWorld.printComponents<RigidBody>();
-    myWorld.printComponents<Mesh>();
-    
-}
-
-
-void Renderer::RenderFrame(void* passPtr, void* drawablePtr)
+void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr)
 {
     auto* passDescriptor = reinterpret_cast<MTL::RenderPassDescriptor*>(passPtr);
     auto* drawable = reinterpret_cast<MTL::Drawable*>(drawablePtr);

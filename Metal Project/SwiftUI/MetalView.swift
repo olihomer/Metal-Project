@@ -11,7 +11,9 @@ import Metal
 import SwiftUI
 
 let device = MTLCreateSystemDefaultDevice()
-var engine = Renderer(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
+var engine = Engine(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
+let clock = ContinuousClock()
+var lastTime = clock.now
 
 struct MetalView: NSViewRepresentable
 {
@@ -44,6 +46,9 @@ struct MetalView: NSViewRepresentable
                 let drawable = view.currentDrawable
             else { return }
             
+            var thisTime = clock.now
+            engine.Update((thisTime-lastTime).components.attoseconds)
+            lastTime = thisTime
             engine.RenderFrame(
                 Unmanaged.passUnretained(pass).toOpaque(),
                 Unmanaged.passUnretained(drawable as AnyObject).toOpaque()
