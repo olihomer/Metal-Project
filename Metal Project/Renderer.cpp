@@ -86,7 +86,7 @@ void Renderer::RunApp()
         std::cout << "No transform found" << std::endl;
     }
     
-    myWorld.each<Transform>([&](ECS::Handle<ECS::Entity> entity, Transform& transform){std::cout<<"Each"<<std::endl;});
+    myWorld.each<Transform,Mesh,Light>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh, Light& light){std::cout<<"Each"<<std::endl;});
     
     myWorld.deleteEntity(myEntity);
 

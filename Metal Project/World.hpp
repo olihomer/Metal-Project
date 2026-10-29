@@ -39,8 +39,8 @@ public:
     T* getComponent(ECS::Handle<ECS::Entity> entity);
     template<typename T>
     void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
-    template<typename... Ts>
-    void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback);
+    template<typename T1, typename... Ts, typename F>
+    void each(F callback);
 
     bool hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
@@ -111,10 +111,17 @@ bool World::hasAllComponents(ECS::Handle<ECS::Entity> entity)
     return entityManager_.hasAllComponents<Ts...>(entity);
 }
 
-template<typename... Ts>
-void World::each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback)
+template<typename T1, typename... Ts, typename F>
+void World::each(F callback)
 {
-    componentManager_.each(callback);
+    ECS::Pool<T1>& pool = componentManager_.getPool<T1>();
+    for(uint32_t i = 0; i < pool.poolSize(); i++)
+    {
+        auto handle = pool.getHandle(i);
+        ECS::Handle<ECS::Entity> owner = pool.getOwner(handle);
+        if(hasAllComponents<Ts...>(owner))
+            callback(pool.getOwner(handle),pool.get(handle),*getComponent<Ts>(owner)...);
+    }
 }
 
 #endif /* World_hpp */

@@ -41,20 +41,21 @@ class Pool
     
 public:
     void print();
-    
-private:
     std::size_t poolSize(){return elements_.size();};
+    Handle<Entity> getOwner(Handle<T>);
+    Handle<T> getHandle(std::uint32_t index){return handles_[index];};
+    T& get(Handle<T> handle);
+
+private:
     std::vector<T> elements_; //vector of the actual components
     std::vector<Slot> slots_; //vector of slots, each of which points to a physicalIndex of the element vector
     std::vector<Handle<T>> handles_; //vector of handles so that we can reverse lookup a slot/handle from an element/physical index
     std::queue<std::uint32_t> freeList_; //queue of available slot indexes
     bool validateHandle(Handle<T> handle);
-    T& get(Handle<T> handle);
     template<typename... Args>
     Handle<T> addElement(Args&&... args); //adds element with no owning entity
     void deleteElement(Handle<T> handle);
     void setOwner(Handle<T> handle, Handle<Entity> owner);
-    Handle<Entity> getOwner(Handle<T>);
 
     friend class EntityManager;
     friend class ComponentManager;

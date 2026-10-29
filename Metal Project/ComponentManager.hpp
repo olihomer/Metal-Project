@@ -43,11 +43,8 @@ private:
     template<typename T>
     void printComponents();
     
-    template<typename T>
-    void each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback);
-    
-    template<typename... Ts>
-    void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback);
+    template<typename T1, typename... Ts, typename F>
+    void each(F callback);
     
     
     Pool<Light> lights_;
@@ -102,27 +99,20 @@ Pool<T>& ComponentManager::getPool()
 template<typename T>
 T* ComponentManager::getComponent(ECS::Handle<T> handle)
 {
-    return &(getPool<T>().elements_[handle.slotIndex]);
+    return &(getPool<T>().get(handle));
 }
 
 
-template<typename T>
-void ComponentManager::each(std::function<void(ECS::Handle<ECS::Entity>,T&)> callback)
+template<typename T1, typename... Ts, typename F>
+void ComponentManager::each(F callback)
 {
-    ECS::Pool<T>& pool = getPool<T>();
+    ECS::Pool<T1>& pool = getPool<T1>();
     for(std::size_t i = 0; i < pool.elements_.size(); i++)
     {
         auto handle = pool.handles_[i];
         auto slotIndex = handle.slotIndex;
         callback(pool.slots_[slotIndex].owner,pool.elements_[i]);
     }
-    
-}
-
-
-template<typename... Ts>
-void each(std::function<void(ECS::Handle<ECS::Entity>,Ts& ...)> callback)
-{
     
 }
 
