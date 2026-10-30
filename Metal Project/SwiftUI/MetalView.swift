@@ -47,7 +47,10 @@ struct MetalView: NSViewRepresentable
             else { return }
             
             var thisTime = clock.now
-            engine.Update((thisTime-lastTime).components.attoseconds)
+            let duration = thisTime - lastTime
+            let components = duration.components
+            let dt = Double(components.seconds) + Double(components.attoseconds) / 1e18
+            engine.Update(dt)
             lastTime = thisTime
             engine.RenderFrame(
                 Unmanaged.passUnretained(pass).toOpaque(),

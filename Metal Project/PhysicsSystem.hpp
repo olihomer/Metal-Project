@@ -15,6 +15,11 @@ class PhysicsSystem
 public:
     void updatePhysics(World& world, double dt);
 private:
+    static constexpr float gravity = 9.81;
+    static constexpr float density = 1.225;
+    
+    void updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt);
+    Vector3D accumulateForces(RigidBody& rigidbody);
 };
 
 

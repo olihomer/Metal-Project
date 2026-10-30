@@ -19,13 +19,13 @@ public:
     Engine(MTL::Device* device)
     :renderSystem_(device){}
     void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable);}
-    void Update(int64_t dt);
+    void Update(double dt);
 
 private:
     World world_;
     RenderSystem renderSystem_;
     PhysicsSystem physicsSystem_;
-    double accumulator_;
+    double accumulator_ = 0;
 };
 
 
