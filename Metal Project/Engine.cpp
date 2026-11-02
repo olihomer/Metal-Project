@@ -47,9 +47,9 @@ void Engine::RunApp()
     world_.addComponent<RigidBody>(myEntity2);
     world_.addComponent<Mesh>(myEntity2);
     
-    RigidBody* rigidbody2 = world_.getComponent<RigidBody>(myEntity2);
-    if(rigidbody2)rigidbody2->setCollider(ColliderType::Sphere, 1.0f);
+    rigidbody = world_.getComponent<RigidBody>(myEntity2);
+    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
 
-    Mesh* mesh2 = world_.getComponent<Mesh>(myEntity2);
-    if(mesh2)mesh2->vertices = {Vector3D(-0.1f,-0.1f,0.0f),Vector3D(0.1f,-0.1f,0.0f),Vector3D(0.0f,0.1f,0.0f)};
+    mesh = world_.getComponent<Mesh>(myEntity2);
+    if(mesh)mesh->vertices = {Vector3D(-0.1f,-0.1f,0.0f),Vector3D(0.1f,-0.1f,0.0f),Vector3D(0.0f,0.1f,0.0f)};
 }

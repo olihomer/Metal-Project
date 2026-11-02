@@ -17,7 +17,12 @@ class Engine
 public:
     void RunApp();
     Engine(MTL::Device* device)
-    :renderSystem_(device){}
+    :renderSystem_(device)
+    {
+        std::cout << "Constructor: " << this << std::endl;
+        RunApp();
+        world_.printEntities();
+    }
     void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable, world_);}
     void Update(double dt);
 
