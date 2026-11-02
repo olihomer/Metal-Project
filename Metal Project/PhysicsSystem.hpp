@@ -10,16 +10,23 @@
 
 #include "World.hpp"
 
+constexpr float touchingDistance = 0.01f;
+
 class PhysicsSystem
 {
 public:
-    void updatePhysics(World& world, double dt);
+    void updatePhysics(World& world, double dt) const;
 private:
     static constexpr float gravity = 9.81;
     static constexpr float density = 1.225;
-    
-    void updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt);
-    Vector3D accumulateForces(RigidBody& rigidbody);
+    static constexpr float minVelocity = 0.005f;
+    static constexpr float stickingThreshold = 0.05f;
+        
+    void updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt) const;
+    void resolveCollisions(Transform& transform, RigidBody& rigidbody) const;
+    Vector3D accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const;
+    bool touchingGround(const Transform& transform, RigidBody& rigidbody) const;
+    void applyDamping(RigidBody& rigidbody) const;
 };
 
 

@@ -14,6 +14,7 @@
 #include <iostream>
 #include "Pool.hpp"
 #include "Transform.hpp"
+#include "World.hpp"
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
@@ -24,7 +25,7 @@ class RenderSystem
 {
 public:
     RenderSystem(MTL::Device* device);
-    void RenderFrame(void* pass, void* drawable);
+    void RenderFrame(void* pass, void* drawable, World& world);
     
 private:
     //Metal objects

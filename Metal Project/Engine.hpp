@@ -18,7 +18,7 @@ public:
     void RunApp();
     Engine(MTL::Device* device)
     :renderSystem_(device){}
-    void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable);}
+    void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable, world_);}
     void Update(double dt);
 
 private:

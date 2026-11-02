@@ -30,7 +30,26 @@ void Engine::RunApp()
     
     auto myEntity = world_.newEntity("Dog");
 
-    world_.addComponent<Transform>(myEntity,Vector3D(1,2,3));
+    world_.addComponent<Transform>(myEntity,Vector3D(0,20,3));
     world_.addComponent<RigidBody>(myEntity);
+    world_.addComponent<Mesh>(myEntity);
     
+    RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
+    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
+
+    Mesh* mesh = world_.getComponent<Mesh>(myEntity);
+    if(mesh)mesh->vertices = {Vector3D(-0.1f,-0.1f,0.0f),Vector3D(0.1f,-0.1f,0.0f),Vector3D(0.0f,0.1f,0.0f)};
+    
+    
+    auto myEntity2 = world_.newEntity("Cat");
+
+    world_.addComponent<Transform>(myEntity2,Vector3D(-5,15,3));
+    world_.addComponent<RigidBody>(myEntity2);
+    world_.addComponent<Mesh>(myEntity2);
+    
+    RigidBody* rigidbody2 = world_.getComponent<RigidBody>(myEntity2);
+    if(rigidbody2)rigidbody2->setCollider(ColliderType::Sphere, 1.0f);
+
+    Mesh* mesh2 = world_.getComponent<Mesh>(myEntity2);
+    if(mesh2)mesh2->vertices = {Vector3D(-0.1f,-0.1f,0.0f),Vector3D(0.1f,-0.1f,0.0f),Vector3D(0.0f,0.1f,0.0f)};
 }

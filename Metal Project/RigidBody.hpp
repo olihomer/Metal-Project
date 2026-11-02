@@ -10,21 +10,23 @@
 
 #include "Pool.hpp"
 #include "Vector3D.h"
+#include "Collider.hpp"
 
 class RigidBody
 {
 public:
     RigidBody(){;};
 
-    void print(){std::cout << "RigidBody  = " << std::endl;};
-
-    float mass = 1.0;
-    float momentInertia = 0.0;
-    Vector3D velocity = Vector3D(0,0,0);
+    float mass = 1.0f;
+    float momentInertia = 0.0f;
+    Vector3D velocity = Vector3D(5,0,0);
     Vector3D cogOffset = Vector3D(0,0,0);
-    float dragCoefficient = 0.5;
-    float crossSectionArea = 1.0;
-    
+    float dragCoefficient = 0.5f;
+    float crossSectionArea = 0.1f;
+    float mu = 0.5f;
+    float elasticity = 0.6f;
+    void setCollider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0){collider_=  Collider(type,r,x,y,z);}
+    Collider collider_{ColliderType::None};
     
 private:
 };

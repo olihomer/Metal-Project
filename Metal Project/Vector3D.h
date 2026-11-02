@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <cmath>
 
 	class Vector3D {
 	public:
@@ -73,15 +74,18 @@
 
 		float magnitude()
 		{
-			return sqrtf(x_ * x_ + y_ * y_ + z_ * z_);
+            return std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
 		}
 
 		void normalize()
 		{
 			float mag = magnitude();
-			x_ /= mag;
-			y_ /= mag;
-			z_ /= mag;
+			if(mag!=0.0f)
+            {
+                x_ /= mag;
+                y_ /= mag;
+                z_ /= mag;
+            }
 		}
 
 	};
