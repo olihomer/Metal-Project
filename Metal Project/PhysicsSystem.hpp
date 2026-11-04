@@ -21,6 +21,7 @@ private:
     static constexpr float density = 1.225;
     static constexpr float minVelocity = 0.005f;
     static constexpr float stickingThreshold = 0.05f;
+    static constexpr float zeroRestitutionThreshold = 0.005f;
         
     void updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt) const;
     void resolveCollisions(Transform& transform, RigidBody& rigidbody) const;

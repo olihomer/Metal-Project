@@ -63,15 +63,16 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
 
     
     //do world stuff
-    std::size_t shapeCount = 0;
+    
     float *vertices = nullptr;
+    std::vector<Vertex>verticesVector;
     
     world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
     {
-        shapeCount++;
+        verticesVector.insert(verticesVector.end(),mesh.vertices.begin(),mesh.vertices.end());
     });
         
-    if(shapeCount)vertices = new float[shapeCount * 12];
+    if(verticesVector.size()>0)vertices = new float[verticesVector.size() * 4];
           
     std::size_t i = 0;
     
@@ -81,26 +82,26 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
         float y = transform.position_.y_/20.0f;
         Vector3D worldTransform(x,y,0);
                 
-        for(Vector3D vertex: mesh.vertices)
+        for(Vertex vertex: mesh.vertices)
         {
-            vertex = vertex + worldTransform;
-            vertices[i++] = vertex.x_;
-            vertices[i++] = vertex.y_;
-            vertices[i++] = vertex.z_;
+            vertex.vx_coords = vertex.vx_coords + worldTransform;
+            vertices[i++] = vertex.vx_coords.x_;
+            vertices[i++] = vertex.vx_coords.y_;
+            vertices[i++] = vertex.vx_coords.z_;
             vertices[i++] = 1.0f;
         }
     });
     
-    NS::UInteger length = 12 * shapeCount;
+    NS::UInteger length = verticesVector.size() * 4;
     MTL::Buffer* buffer = nullptr;
     
     commandEncoder->setRenderPipelineState(pipelineState_.get());
     
-    if(length>0)
+    if(length > 0)
     {
         buffer = device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
         commandEncoder->setVertexBuffer(buffer, 0, 0);
-        commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), NS::UInteger(3*shapeCount));
+        commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), NS::UInteger(length/3));
     }
 
     commandEncoder->endEncoding();

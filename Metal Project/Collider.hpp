@@ -19,7 +19,7 @@ public:
     float y_; // used for capsule and cuboid
     float z_; // used for cuboid
     Collider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0)
-    :type_(type), x_(x), y_(y), z_(z)
+    :type_(type), r_(r), x_(x), y_(y), z_(z)
     {
         
     }

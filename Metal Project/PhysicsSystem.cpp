@@ -62,11 +62,18 @@ Vector3D PhysicsSystem::accumulateForces(const Transform& transform, RigidBody& 
     if(touchingGround(transform, rigidbody))
     {
         Vector3D frictionDirection = Vector3D(rigidbody.velocity.x_, 0.0f, rigidbody.velocity.z_) * -1.0f;
-        float frictionCap = frictionDirection.magnitude() * rigidbody.mass * (1/dt);
-        frictionDirection.normalize();
-        float frictionMagnitude = std::min(rigidbody.mu * rigidbody.mass * gravity, frictionCap);
-        if(frictionMagnitude < stickingThreshold)frictionMagnitude = frictionCap;
-        frictionForce = frictionDirection * frictionMagnitude;
+        if(frictionDirection.magnitude()<stickingThreshold)
+        {
+            rigidbody.velocity.x_ = 0;
+            rigidbody.velocity.z_ = 0;
+        }
+        else
+        {
+            float frictionCap = frictionDirection.magnitude() * rigidbody.mass * (1/dt);
+            frictionDirection.normalize();
+            float frictionMagnitude = std::min(rigidbody.mu * rigidbody.mass * gravity, frictionCap);
+            frictionForce = frictionDirection * frictionMagnitude;
+        }
     }
     
     if(showDebug)
@@ -94,7 +101,14 @@ void PhysicsSystem::resolveCollisions(Transform &transform, RigidBody &rigidbody
     //Collision with ground
     
     if(touchingGround(transform, rigidbody))
-        rigidbody.velocity.y_ *= -1.0f * rigidbody.elasticity;
+    {
+        transform.position_.y_ = rigidbody.collider_.r_; //resolve penetration
+        if(rigidbody.velocity.y_ < 0.0f)
+        {
+            rigidbody.velocity.y_ *= -1.0f * rigidbody.elasticity;
+            if(rigidbody.velocity.y_ < zeroRestitutionThreshold)rigidbody.velocity.y_ = 0;
+        }
+    }
 }
 
 
