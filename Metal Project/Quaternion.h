@@ -10,7 +10,7 @@ private:
 	float w_; //real part
 	Vector3D v_; //vector part
 public:
-	Quaternion() :w_(0.0f), v_() {}
+	Quaternion() :w_(1.0f), v_() {}
 	Quaternion(float w, Vector3D v) :w_(w), v_(v) {}
 	Quaternion(float w, float x, float y, float z) :w_(w), v_(Vector3D(x,y,z)) {}
 

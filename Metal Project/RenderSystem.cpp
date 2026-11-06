@@ -73,14 +73,13 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
     // iterate through meshes
     
     float *vertices = nullptr;
-          
-    std::size_t i = 0;
-    
+              
     world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
     {
         if(mesh.vertices.size()>0)
         {
             vertices = new float[mesh.vertices.size() * 4];
+            std::size_t i = 0;
             
             Matrix4x4 modelMatrix = transform.rotation_.toMatrix();
             modelMatrix.setTranslation(transform.position_);
@@ -102,7 +101,7 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
             {
                 buffer = device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
                 commandEncoder->setVertexBuffer(buffer, 0, VERTEXBUFFER);
-                commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), NS::UInteger(length/3));
+                commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), mesh.vertices.size());
                 if(buffer)buffer->release();
                 if(vertices)delete[] vertices;
             }

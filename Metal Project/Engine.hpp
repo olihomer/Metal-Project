@@ -11,7 +11,11 @@
 #include "World.hpp"
 #include "RenderSystem.hpp"
 #include "PhysicsSystem.hpp"
+#include "InputSystem.hpp"
 #include "Camera.h"
+
+constexpr float MOVEMENT_SPEED = 0.3f;
+constexpr float MOUSE_SENSITIVIY = 0.005f;
 
 class Engine
 {
@@ -26,12 +30,19 @@ public:
     }
     void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable, world_);}
     void Update(double dt);
+    void KeyDown(int keyCode);
+    void KeyUp(int keyCode);
+    void MouseMoved(float dx, float dy);
+    bool shouldQuit(){return shouldQuit_;}
+    void requestQuit(){shouldQuit_ = true;}
 
 private:
     World world_;
     RenderSystem renderSystem_;
     PhysicsSystem physicsSystem_;
+    InputSystem inputSystem_;
     double accumulator_ = 0;
+    bool shouldQuit_ = false;
 };
 
 

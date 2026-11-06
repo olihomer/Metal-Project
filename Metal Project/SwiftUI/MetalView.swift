@@ -10,8 +10,8 @@ import MetalKit
 import Metal
 import SwiftUI
 
-var engine = Engine(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
 let device = MTLCreateSystemDefaultDevice()
+var engine = Engine(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
 let clock = ContinuousClock()
 var lastTime = clock.now
 
@@ -19,7 +19,7 @@ struct MetalView: NSViewRepresentable
 {
     func makeNSView(context: Context) -> MTKView {
         let device = device
-        let view = MTKView(frame: .zero, device: device)
+        let view = GameView(frame: .zero, device: device)
         
         view.colorPixelFormat = MTLPixelFormat.bgra8Unorm
         view.clearColor = MTLClearColor(red: 0.1, green: 0.2, blue: 0.3, alpha: 1.0)
@@ -53,6 +53,12 @@ struct MetalView: NSViewRepresentable
             let components = duration.components
             let dt = Double(components.seconds) + Double(components.attoseconds) / 1e18
             engine.Update(dt)
+            
+            if(engine.shouldQuit()){
+                NSApp.terminate(nil)
+                return
+            }
+            
             lastTime = thisTime
             engine.RenderFrame(
                 Unmanaged.passUnretained(pass).toOpaque(),
