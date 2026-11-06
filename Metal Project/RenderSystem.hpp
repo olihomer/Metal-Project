@@ -43,6 +43,7 @@ private:
     NS::SharedPtr<MTL::CommandQueue> commandQueue_;
     NS::SharedPtr<MTL::Library> defaultLibrary_;
     NS::SharedPtr<MTL::RenderPipelineState> pipelineState_;
+    NS::SharedPtr<MTL::DepthStencilState> depthState_;
     
 };
 

@@ -26,8 +26,29 @@ void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& tra
     Vector3D acceleration = netForce * (1.0f/rigidbody.mass);
 
     //Symplectic Euler Integration
+    
+    //linear position
     rigidbody.velocity = rigidbody.velocity + acceleration * dt;
     transform.position_ = transform.position_ + rigidbody.velocity * dt;
+    
+    //angular position
+    Vector3D torque;
+    Vector3D angularAcceleration = torque * (1/rigidbody.momentInertia);
+    rigidbody.angularVelocity = rigidbody.angularVelocity + angularAcceleration * dt;
+    
+    Vector3D omega = rigidbody.angularVelocity;
+    float speed = omega.magnitude();
+    
+    if(speed > 1e-6)
+    {
+        Vector3D axis = omega * (1.0f / speed);
+        
+        Quaternion deltaRotation;
+        deltaRotation.setRotationAroundAxis(speed * dt, axis);
+        
+        transform.rotation_= deltaRotation * transform.rotation_;
+        transform.rotation_.normalise();
+    }
     
     //resolve collisions
     resolveCollisions(transform, rigidbody);

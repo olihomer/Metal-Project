@@ -37,6 +37,7 @@ RenderSystem::RenderSystem(MTL::Device* device)
     pipelineDesc->setFragmentFunction(fragmentFunction);
     pipelineDesc->setVertexFunction(vertexFunction);
     pipelineDesc->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+    pipelineDesc->setDepthAttachmentPixelFormat(MTL::PixelFormatDepth32Float);
 
     NS::Error* error;
     pipelineState_ = NS::TransferPtr(device_->newRenderPipelineState(pipelineDesc,&error));
@@ -45,6 +46,20 @@ RenderSystem::RenderSystem(MTL::Device* device)
         std::cout << error->code() << std::endl;
         throw std::runtime_error("couldn't create pipeline");
     }
+    
+    auto* depthDesc = MTL::DepthStencilDescriptor::alloc()->init();
+
+    depthDesc->setDepthCompareFunction(
+        MTL::CompareFunctionLess
+    );
+
+    depthDesc->setDepthWriteEnabled(true);
+
+    depthState_ = NS::TransferPtr(
+        device_->newDepthStencilState(depthDesc)
+    );
+
+    depthDesc->release();
     
     pipelineDesc->release();
     fragmentFunction->release();
@@ -61,6 +76,7 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
     auto* commandBuffer = commandQueue_->commandBuffer();
     auto* commandEncoder = commandBuffer->renderCommandEncoder(passDescriptor);
     commandEncoder->setRenderPipelineState(pipelineState_.get());
+    commandEncoder->setDepthStencilState(depthState_.get());
 
     //get camera transforms and send to vertex shader buffer
     

@@ -18,8 +18,9 @@ public:
     RigidBody(){;};
 
     float mass = 1.0f;
-    float momentInertia = 0.0f;
-    Vector3D velocity = Vector3D(5,0,0);
+    float momentInertia = 0.4f * mass;
+    Vector3D velocity = Vector3D(5.0f,0.0f,0.0f);
+    Vector3D angularVelocity = Vector3D(0,0.2f,0.5f);
     Vector3D cogOffset = Vector3D(0,0,0);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;

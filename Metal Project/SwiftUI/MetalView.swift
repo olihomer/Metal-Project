@@ -27,6 +27,8 @@ struct MetalView: NSViewRepresentable
         view.isPaused = false
         view.enableSetNeedsDisplay = false
         view.delegate = context.coordinator
+        view.depthStencilPixelFormat = .depth32Float
+        view.clearDepth = 1.0
         
         return view
     }
