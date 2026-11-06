@@ -60,53 +60,56 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
     
     auto* commandBuffer = commandQueue_->commandBuffer();
     auto* commandEncoder = commandBuffer->renderCommandEncoder(passDescriptor);
+    commandEncoder->setRenderPipelineState(pipelineState_.get());
 
+    //get camera transforms and send to vertex shader buffer
     
-    //do world stuff
+    auto* camera = world.getCamera();
+    
+    ViewProjection viewProjection{camera->getCameraTransform(), camera->getPerspectiveTransform()};
+    
+    commandEncoder->setVertexBytes(&viewProjection, sizeof(viewProjection), VIEWPROJBUFFER);
+    
+    // iterate through meshes
     
     float *vertices = nullptr;
-    std::vector<Vertex>verticesVector;
-    
-    world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
-    {
-        verticesVector.insert(verticesVector.end(),mesh.vertices.begin(),mesh.vertices.end());
-    });
-        
-    if(verticesVector.size()>0)vertices = new float[verticesVector.size() * 4];
           
     std::size_t i = 0;
     
     world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
     {
-        float x = transform.position_.x_/20.0f;
-        float y = transform.position_.y_/20.0f;
-        Vector3D worldTransform(x,y,0);
-                
-        for(Vertex vertex: mesh.vertices)
+        if(mesh.vertices.size()>0)
         {
-            vertex.vx_coords = vertex.vx_coords + worldTransform;
-            vertices[i++] = vertex.vx_coords.x_;
-            vertices[i++] = vertex.vx_coords.y_;
-            vertices[i++] = vertex.vx_coords.z_;
-            vertices[i++] = 1.0f;
+            vertices = new float[mesh.vertices.size() * 4];
+            
+            Matrix4x4 modelMatrix = transform.rotation_.toMatrix();
+            modelMatrix.setTranslation(transform.position_);
+            
+            commandEncoder->setVertexBytes(&modelMatrix, sizeof(modelMatrix), MODELBUFFER);
+            
+            for(Vertex vertex: mesh.vertices)
+            {
+                vertices[i++] = vertex.vx_coords.x_;
+                vertices[i++] = vertex.vx_coords.y_;
+                vertices[i++] = vertex.vx_coords.z_;
+                vertices[i++] = 1.0f;
+            }
+            
+            NS::UInteger length = mesh.vertices.size() * 4;
+            MTL::Buffer* buffer = nullptr;
+
+            if(length > 0)
+            {
+                buffer = device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
+                commandEncoder->setVertexBuffer(buffer, 0, VERTEXBUFFER);
+                commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), NS::UInteger(length/3));
+                if(buffer)buffer->release();
+                if(vertices)delete[] vertices;
+            }
         }
     });
     
-    NS::UInteger length = verticesVector.size() * 4;
-    MTL::Buffer* buffer = nullptr;
-    
-    commandEncoder->setRenderPipelineState(pipelineState_.get());
-    
-    if(length > 0)
-    {
-        buffer = device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
-        commandEncoder->setVertexBuffer(buffer, 0, 0);
-        commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), NS::UInteger(length/3));
-    }
-
     commandEncoder->endEncoding();
     commandBuffer->presentDrawable(drawable);
     commandBuffer->commit();
-    if(buffer)buffer->release();
-    if(vertices)delete[] vertices;
 }

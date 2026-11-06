@@ -8,6 +8,12 @@
 #include <metal_stdlib>
 using namespace metal;
 
+struct CameraMatrices
+{
+    float4x4 view;
+    float4x4 projection;
+};
+
 constant half3 colors[] =
 {
     half3(1.0,0.0,0.0),
@@ -23,22 +29,17 @@ struct VertexData
 };
 
 
-VertexData vertex vertexMain(constant float4* buffer [[buffer(0)]], uint vertexID [[vertex_id]])
+VertexData vertex vertexMain(constant float4* vertexbuffer [[buffer(0)]], uint vertexID [[vertex_id]], constant CameraMatrices& camera [[buffer(1)]], constant float4x4& model [[buffer(2)]])
 {
     VertexData data;
-    data.position = buffer[vertexID];
+    data.position = model * vertexbuffer[vertexID];
+    data.position = camera.view * data.position;
+    data.position = camera.projection * data.position;
+    
     data.color = colors[vertexID % 3];
     return data;
 }
 
-/*VertexData vertex vertexMain(uint vertexID [[vertex_id]])
-{
-    VertexData data;
-    
-    data.position = positions[vertexID];
-    data.color = colors[vertexID];
-    return data;
-}*/
 
 half4 fragment fragmentMain(VertexData frag [[stage_in]])
 {

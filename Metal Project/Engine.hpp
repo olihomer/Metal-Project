@@ -11,6 +11,7 @@
 #include "World.hpp"
 #include "RenderSystem.hpp"
 #include "PhysicsSystem.hpp"
+#include "Camera.h"
 
 class Engine
 {

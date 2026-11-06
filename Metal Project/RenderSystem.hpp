@@ -15,11 +15,21 @@
 #include "Pool.hpp"
 #include "Transform.hpp"
 #include "World.hpp"
+#include "Matrix4x4.h"
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
+constexpr NS::UInteger VERTEXBUFFER = 0;
+constexpr NS::UInteger VIEWPROJBUFFER = 1;
+constexpr NS::UInteger MODELBUFFER = 2;
+
+struct alignas(16) ViewProjection
+{
+    Matrix4x4 viewMatrix;
+    Matrix4x4 projectionMatrix;
+};
 
 class RenderSystem
 {

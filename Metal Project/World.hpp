@@ -22,7 +22,12 @@
 class World
 {
 public:
-    World(){};
+    World()
+    {
+        cameraEntity_= newEntity();
+        addComponent<Camera>(cameraEntity_);
+    };
+    
     ECS::Handle<ECS::Entity> newEntity(std::string name = "Unnamed");
 
     template<typename T>
@@ -45,10 +50,13 @@ public:
     bool hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
     void printEntities(){entityManager_.entities_.print();}
+    
+    Camera* getCamera(){return getComponent<Camera>(cameraEntity_);}
 
 private:
     ECS::EntityManager entityManager_;
     ECS::ComponentManager componentManager_;
+    ECS::Handle<ECS::Entity> cameraEntity_;
 };
 
 template<typename T, typename... Args>

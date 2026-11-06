@@ -36,6 +36,5 @@ void Engine::RunApp()
     
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
     if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
-
-    Mesh* mesh = world_.getComponent<Mesh>(myEntity);    
+    
 }

@@ -12,6 +12,7 @@
 #include "Mesh.hpp"
 #include "RigidBody.hpp"
 #include "Transform.hpp"
+#include "Camera.h"
 #include <cstdint>
 
 namespace ECS {
@@ -20,7 +21,8 @@ enum class ComponentType {
     Light,
     Mesh,
     RigidBody,
-    Transform
+    Transform,
+    Camera
 };
 
 template<typename T>
@@ -41,6 +43,9 @@ inline constexpr ComponentType componentType<RigidBody> = ComponentType::RigidBo
 
 template<>
 inline constexpr ComponentType componentType<Transform> = ComponentType::Transform;
+
+template<>
+inline constexpr ComponentType componentType<Camera> = ComponentType::Camera;
 
 struct ComponentReference
 {

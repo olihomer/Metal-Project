@@ -14,6 +14,7 @@
 #include "Mesh.hpp"
 #include "RigidBody.hpp"
 #include "Transform.hpp"
+#include "Camera.h"
 #include "ComponentReference.hpp"
 #include <cxxabi.h>
 
@@ -46,7 +47,7 @@ private:
     template<typename T1, typename... Ts, typename F>
     void each(F callback);
     
-    
+    Pool<Camera> cameras_;
     Pool<Light> lights_;
     Pool<Mesh> meshes_;
     Pool<RigidBody> rigidBodies_;
@@ -92,7 +93,9 @@ Pool<T>& ComponentManager::getPool()
             else
                 if constexpr (std::is_same_v<T, Transform>) return transforms_;
                 else
-                    static_assert(false, "Unsupported pool type");
+                    if constexpr (std::is_same_v<T, Camera>) return cameras_;
+                    else
+                        static_assert(false, "Unsupported pool type");
 }
 
 

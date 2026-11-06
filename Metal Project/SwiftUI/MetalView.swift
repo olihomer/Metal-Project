@@ -10,8 +10,8 @@ import MetalKit
 import Metal
 import SwiftUI
 
-let device = MTLCreateSystemDefaultDevice()
 var engine = Engine(OpaquePointer(Unmanaged.passUnretained(device as AnyObject).toOpaque()))
+let device = MTLCreateSystemDefaultDevice()
 let clock = ContinuousClock()
 var lastTime = clock.now
 
@@ -31,6 +31,7 @@ struct MetalView: NSViewRepresentable
         return view
     }
     
+    
     func updateNSView(_ view: MTKView, context: Context) {
     
     }
@@ -40,13 +41,14 @@ struct MetalView: NSViewRepresentable
     }
     
     class Coordinator: NSObject, MTKViewDelegate{
+
         func draw(in view: MTKView){
             guard
                 let pass = view.currentRenderPassDescriptor,
                 let drawable = view.currentDrawable
             else { return }
             
-            var thisTime = clock.now
+            let thisTime = clock.now
             let duration = thisTime - lastTime
             let components = duration.components
             let dt = Double(components.seconds) + Double(components.attoseconds) / 1e18

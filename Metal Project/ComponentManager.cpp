@@ -28,6 +28,9 @@ void ComponentManager::deleteComponents(const std::vector<ComponentReference>& c
             case ComponentType::Transform:
                 transforms_.deleteElement(Handle<Transform>(component.slotIndex,component.generation));
                 break;
+            case ComponentType::Camera:
+                cameras_.deleteElement(Handle<Camera>(component.slotIndex,component.generation));
+                break;
         }
     }
 }
