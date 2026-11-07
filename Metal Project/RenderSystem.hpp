@@ -31,11 +31,20 @@ struct alignas(16) ViewProjection
     Matrix4x4 projectionMatrix;
 };
 
+
+struct gpuMesh
+{
+    MTL::Buffer* vertexBuffer_;
+    MTL::Buffer* indexBuffer_;
+    std::size_t size_;
+};
+
 class RenderSystem
 {
 public:
     RenderSystem(MTL::Device* device);
     void RenderFrame(void* pass, void* drawable, World& world);
+    void prepareMeshBuffers(MeshAsset& meshAsset);
     
 private:
     //Metal objects
@@ -44,6 +53,7 @@ private:
     NS::SharedPtr<MTL::Library> defaultLibrary_;
     NS::SharedPtr<MTL::RenderPipelineState> pipelineState_;
     NS::SharedPtr<MTL::DepthStencilState> depthState_;
+    std::vector<gpuMesh> gpuMeshes_;
     
 };
 

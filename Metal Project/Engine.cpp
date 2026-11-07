@@ -51,9 +51,11 @@ void Engine::RunApp()
     
     auto myEntity = world_.newEntity("Dog");
 
+    loadMeshAsset("sphere.obj", "sphere");
+    
     world_.addComponent<Transform>(myEntity,Vector3D(-5,5,8));
     world_.addComponent<RigidBody>(myEntity);
-    world_.addComponent<Mesh>(myEntity,"sphere.obj");
+    world_.addComponent<Mesh>(myEntity,getMeshReference("sphere"));
     
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
     if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
@@ -76,3 +78,12 @@ void Engine::MouseMoved(float dx, float dy)
     camera->Yaw(MOUSE_SENSITIVIY * dx);
     camera->Pitch(MOUSE_SENSITIVIY * dy);
 }
+
+void Engine::loadMeshAsset(std::string filename, std::string assetName)
+{
+    MeshAsset temp(filename, assetName);
+    renderSystem_.prepareMeshBuffers(temp);
+    meshAssets_.push_back(temp);
+    meshLookup_[assetName] = meshAssets_.size() - 1;
+}
+

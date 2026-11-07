@@ -12,7 +12,8 @@
 #include "tiny_obj_loader.h"
 
 
-Mesh::Mesh(std::string filename)
+MeshAsset::MeshAsset(std::string filename, std::string assetName)
+: assetName_(assetName)
 {
     NS::String* resourcePath = NS::Bundle::mainBundle()->resourcePath();
     if (resourcePath == nullptr)
@@ -26,7 +27,7 @@ Mesh::Mesh(std::string filename)
 }
 
 
-void Mesh::Load(const char* filename)
+void MeshAsset::Load(const char* filename)
 {
     using namespace tinyobj;
     

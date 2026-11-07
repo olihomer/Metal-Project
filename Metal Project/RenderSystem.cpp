@@ -18,6 +18,7 @@
 #include <Metal/Metal.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 #include "World.hpp"
+#include "Mesh.hpp"
 
 
 RenderSystem::RenderSystem(MTL::Device* device)
@@ -87,44 +88,48 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
     commandEncoder->setVertexBytes(&viewProjection, sizeof(viewProjection), VIEWPROJBUFFER);
     
     // iterate through meshes
-    
-    float *vertices = nullptr;
-              
+                  
     world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
     {
-        if(mesh.vertices.size()>0)
-        {
-            vertices = new float[mesh.vertices.size() * 4];
-            std::size_t i = 0;
-            
             Matrix4x4 modelMatrix = transform.rotation_.toMatrix();
             modelMatrix.setTranslation(transform.position_);
             
             commandEncoder->setVertexBytes(&modelMatrix, sizeof(modelMatrix), MODELBUFFER);
-            
-            for(Vertex vertex: mesh.vertices)
-            {
-                vertices[i++] = vertex.vx_coords.x_;
-                vertices[i++] = vertex.vx_coords.y_;
-                vertices[i++] = vertex.vx_coords.z_;
-                vertices[i++] = 1.0f;
-            }
-            
-            NS::UInteger length = mesh.vertices.size() * 4;
-            MTL::Buffer* buffer = nullptr;
-
-            if(length > 0)
-            {
-                buffer = device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
-                commandEncoder->setVertexBuffer(buffer, 0, VERTEXBUFFER);
-                commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), mesh.vertices.size());
-                if(buffer)buffer->release();
-                if(vertices)delete[] vertices;
-            }
-        }
-    });
+     
+            commandEncoder->setVertexBuffer(gpuMeshes_[mesh.gpuMeshIndex_].vertexBuffer_, 0, VERTEXBUFFER);
+            commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), gpuMeshes_[mesh.gpuMeshIndex_].size_);
+    }
+        
+    );
     
     commandEncoder->endEncoding();
     commandBuffer->presentDrawable(drawable);
     commandBuffer->commit();
+}
+
+
+void RenderSystem::prepareMeshBuffers(MeshAsset& meshAsset)
+{
+    float* vertices = new float[meshAsset.vertices.size() * 4];
+    std::size_t i = 0;
+        
+    for(Vertex vertex: meshAsset.vertices)
+    {
+        vertices[i++] = vertex.vx_coords.x_;
+        vertices[i++] = vertex.vx_coords.y_;
+        vertices[i++] = vertex.vx_coords.z_;
+        vertices[i++] = 1.0f;
+    }
+    
+    NS::UInteger length = meshAsset.vertices.size() * 4;
+    gpuMesh temp;
+    
+    if(length > 0)
+    {
+        temp.size_ = meshAsset.vertices.size();
+        temp.vertexBuffer_= device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
+        gpuMeshes_.push_back(temp);
+        meshAsset.gpuMeshIndex_ = gpuMeshes_.size()-1;
+        if(vertices)delete[] vertices;
+    }
 }

@@ -34,15 +34,25 @@ struct Vertex
 
 
 
-class Mesh
+class MeshAsset
 {
 public:
-    Mesh(std::string filename);
+    MeshAsset(std::string filename, std::string assetName);
     void Load(const char* filename);
-    void print(){std::cout << "Mesh  = " << std::endl;};
 
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
+    std::size_t gpuMeshIndex_;
+private:
+    std::string assetName_;
+};
+
+
+class Mesh
+{
+public:
+    Mesh(std::size_t gpuMeshIndex){gpuMeshIndex_ = gpuMeshIndex;}
+    std::size_t gpuMeshIndex_;
 private:
 };
 

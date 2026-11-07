@@ -13,6 +13,8 @@
 #include "PhysicsSystem.hpp"
 #include "InputSystem.hpp"
 #include "Camera.h"
+#include "Mesh.hpp"
+#include <map>
 
 constexpr float MOVEMENT_SPEED = 0.3f;
 constexpr float MOUSE_SENSITIVIY = 0.005f;
@@ -35,8 +37,12 @@ public:
     void MouseMoved(float dx, float dy);
     bool shouldQuit(){return shouldQuit_;}
     void requestQuit(){shouldQuit_ = true;}
+    void loadMeshAsset(std::string filename, std::string assetName);
+    std::size_t getMeshReference(std::string assetName){return meshLookup_[assetName];}
 
 private:
+    std::vector<MeshAsset> meshAssets_;
+    std::map<std::string,std::size_t> meshLookup_;
     World world_;
     RenderSystem renderSystem_;
     PhysicsSystem physicsSystem_;

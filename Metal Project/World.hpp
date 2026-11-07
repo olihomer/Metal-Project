@@ -52,7 +52,7 @@ public:
     void printEntities(){entityManager_.entities_.print();}
     
     Camera* getCamera(){return getComponent<Camera>(cameraEntity_);}
-
+    
 private:
     ECS::EntityManager entityManager_;
     ECS::ComponentManager componentManager_;
