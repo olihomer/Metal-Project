@@ -51,7 +51,12 @@ private:
 class Mesh
 {
 public:
-    Mesh(std::size_t gpuMeshIndex){gpuMeshIndex_ = gpuMeshIndex;}
+    Mesh(std::pair<std::size_t,std::size_t> meshRef)
+    {
+        meshIndex_ = meshRef.first;
+        gpuMeshIndex_ = meshRef.second;
+    }
+    std::size_t meshIndex_;
     std::size_t gpuMeshIndex_;
 private:
 };

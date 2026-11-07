@@ -81,9 +81,22 @@ void Engine::MouseMoved(float dx, float dy)
 
 void Engine::loadMeshAsset(std::string filename, std::string assetName)
 {
+    if(meshLookup_.find(assetName)!=meshLookup_.end())
+    {
+        throw std::runtime_error("Duplicate asset name");
+    }
     MeshAsset temp(filename, assetName);
     renderSystem_.prepareMeshBuffers(temp);
     meshAssets_.push_back(temp);
     meshLookup_[assetName] = meshAssets_.size() - 1;
 }
 
+
+std::pair<std::size_t,std::size_t> Engine::getMeshReference(std::string assetName)
+{
+    if(meshLookup_.find(assetName)==meshLookup_.end())
+    {
+        throw std::runtime_error("Asset name not found");
+    }
+    return std::pair<std::size_t,std::size_t>(meshLookup_[assetName],meshAssets_[meshLookup_[assetName]].gpuMeshIndex_);
+}

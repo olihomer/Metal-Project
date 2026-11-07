@@ -34,8 +34,8 @@ struct alignas(16) ViewProjection
 
 struct gpuMesh
 {
-    MTL::Buffer* vertexBuffer_;
-    MTL::Buffer* indexBuffer_;
+    NS::SharedPtr<MTL::Buffer> vertexBuffer_;
+    NS::SharedPtr<MTL::Buffer> indexBuffer_;
     std::size_t size_;
 };
 

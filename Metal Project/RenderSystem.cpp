@@ -91,13 +91,16 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
                   
     world.each<Transform, Mesh>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, Mesh& mesh)
     {
-            Matrix4x4 modelMatrix = transform.rotation_.toMatrix();
-            modelMatrix.setTranslation(transform.position_);
-            
-            commandEncoder->setVertexBytes(&modelMatrix, sizeof(modelMatrix), MODELBUFFER);
-     
-            commandEncoder->setVertexBuffer(gpuMeshes_[mesh.gpuMeshIndex_].vertexBuffer_, 0, VERTEXBUFFER);
-            commandEncoder->drawPrimitives(MTL::PrimitiveTypeTriangle, NS::UInteger(0), gpuMeshes_[mesh.gpuMeshIndex_].size_);
+        Matrix4x4 modelMatrix = transform.rotation_.toMatrix();
+        modelMatrix.setTranslation(transform.position_);
+        
+        commandEncoder->setVertexBytes(&modelMatrix, sizeof(modelMatrix), MODELBUFFER);
+        
+        auto vertexBuffer = gpuMeshes_[mesh.gpuMeshIndex_].vertexBuffer_.get();
+        auto indexBuffer = gpuMeshes_[mesh.gpuMeshIndex_].indexBuffer_.get();
+        auto size = gpuMeshes_[mesh.gpuMeshIndex_].size_;
+        commandEncoder->setVertexBuffer(vertexBuffer, 0, VERTEXBUFFER);
+        commandEncoder->drawIndexedPrimitives(MTL::PrimitiveTypeTriangle, size, MTL::IndexTypeUInt32, indexBuffer, 0);
     }
         
     );
@@ -110,7 +113,13 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
 
 void RenderSystem::prepareMeshBuffers(MeshAsset& meshAsset)
 {
-    float* vertices = new float[meshAsset.vertices.size() * 4];
+    if(meshAsset.vertices.size()==0)
+    {
+        throw std::runtime_error("Mesh has no vertices");
+    }
+    
+    std::vector<float> vertices;
+    vertices.resize(meshAsset.vertices.size() * 4);
     std::size_t i = 0;
         
     for(Vertex vertex: meshAsset.vertices)
@@ -126,10 +135,10 @@ void RenderSystem::prepareMeshBuffers(MeshAsset& meshAsset)
     
     if(length > 0)
     {
-        temp.size_ = meshAsset.vertices.size();
-        temp.vertexBuffer_= device_->newBuffer(vertices, length * sizeof(float), MTL::ResourceStorageModeShared);
+        temp.size_ = meshAsset.indices.size();
+        temp.vertexBuffer_= NS::TransferPtr(device_->newBuffer(vertices.data(), length * sizeof(float), MTL::ResourceStorageModeShared));
+        temp.indexBuffer_ = NS::TransferPtr(device_->newBuffer(meshAsset.indices.data(), meshAsset.indices.size() * sizeof(unsigned int), MTL::ResourceStorageModeShared));
         gpuMeshes_.push_back(temp);
         meshAsset.gpuMeshIndex_ = gpuMeshes_.size()-1;
-        if(vertices)delete[] vertices;
     }
 }

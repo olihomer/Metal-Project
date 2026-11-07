@@ -38,7 +38,7 @@ public:
     bool shouldQuit(){return shouldQuit_;}
     void requestQuit(){shouldQuit_ = true;}
     void loadMeshAsset(std::string filename, std::string assetName);
-    std::size_t getMeshReference(std::string assetName){return meshLookup_[assetName];}
+    std::pair<std::size_t,std::size_t> getMeshReference(std::string assetName);
 
 private:
     std::vector<MeshAsset> meshAssets_;

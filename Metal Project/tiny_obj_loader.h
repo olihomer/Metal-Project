@@ -446,6 +446,8 @@ struct index_t {
   int vertex_index;
   int normal_index;
   int texcoord_index;
+    
+  bool operator==(const index_t&) const = default;
 };
 
 struct mesh_t {
