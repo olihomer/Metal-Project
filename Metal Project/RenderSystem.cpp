@@ -119,7 +119,7 @@ void RenderSystem::prepareMeshBuffers(MeshAsset& meshAsset)
     }
     
     std::vector<float> vertices;
-    vertices.resize(meshAsset.vertices.size() * 4);
+    vertices.resize(meshAsset.vertices.size() * 7);
     std::size_t i = 0;
         
     for(Vertex vertex: meshAsset.vertices)
@@ -128,9 +128,13 @@ void RenderSystem::prepareMeshBuffers(MeshAsset& meshAsset)
         vertices[i++] = vertex.vx_coords.y_;
         vertices[i++] = vertex.vx_coords.z_;
         vertices[i++] = 1.0f;
+        vertices[i++] = vertex.nx_coords.x_;
+        vertices[i++] = vertex.nx_coords.y_;
+        vertices[i++] = vertex.nx_coords.z_;
+        
     }
     
-    NS::UInteger length = meshAsset.vertices.size() * 4;
+    NS::UInteger length = meshAsset.vertices.size() * 7;
     gpuMesh temp;
     
     if(length > 0)
