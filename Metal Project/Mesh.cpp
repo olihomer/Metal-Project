@@ -7,6 +7,8 @@
 
 #include "Mesh.hpp"
 #include "metal-cpp/Foundation/Foundation.hpp"
+#include "Matrix3x3.hpp"
+#include <algorithm>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -46,6 +48,7 @@ MeshAsset::MeshAsset(std::string filename, std::string assetName)
     std::string objPath = resourcePath->utf8String();
     objPath += "/" + filename;
     Load(objPath.c_str());
+    ComputeInertia();
 }
 
 
@@ -80,6 +83,8 @@ void MeshAsset::Load(const char* filename)
     {
         size_t index_offset = 0;
         indices.reserve(shapes[s].mesh.indices.size());
+        
+        std::cout << "Faces: " << shapes[s].mesh.num_face_vertices.size() << std::endl;
         
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
         {
@@ -128,4 +133,78 @@ void MeshAsset::Load(const char* filename)
         
         std::cout << "Mesh from file created ok" << std::endl;
     }
+}
+
+
+void MeshAsset::ComputeInertia()
+{
+    Matrix3x3 canonical({1.0f/60.0f,1.0f/120.0f,1.0f/120.0f,1.0f/120.0f,1.0f/60.0f,1.0f/120.0f,1.0f/120.0f,1.0f/120.0f,1.0f/60.0f});
+    Matrix3x3 cAccum({0,0,0,0,0,0,0,0,0});
+    
+    canonical.print();
+    
+    float xMean{}, yMean{}, zMean{};
+    float xMin{}, yMin{}, zMin{};
+    float xMax{}, yMax{}, zMax{};
+    float volume{};
+    float density = 1.0f;
+    
+    int faceCount = 0;
+    for(std::size_t i = 0; i < indices.size(); i+=3)
+    {
+        Vector3D w0 = Vector3D(0,0,0);
+        Vector3D w1 = vertices[indices[i]].vx_coords;
+        Vector3D w2 = vertices[indices[i+1]].vx_coords;
+        Vector3D w3 = vertices[indices[i+2]].vx_coords;
+
+        xMean+=w1.x_+w2.x_+w3.x_;
+        yMean+=w1.y_+w2.y_+w3.y_;
+        zMean+=w1.z_+w2.z_+w3.z_;
+        xMin=std::min({xMin,w1.x_,w2.x_,w3.x_});
+        yMin=std::min({yMin,w1.y_,w2.y_,w3.y_});
+        zMin=std::min({zMin,w1.z_,w2.z_,w3.z_});
+        xMax=std::max({xMax,w1.x_,w2.x_,w3.x_});
+        yMax=std::max({yMax,w1.y_,w2.y_,w3.y_});
+        zMax=std::max({zMax,w1.z_,w2.z_,w3.z_});
+
+        
+        Vector3D a0 = w1 - w0;
+        Vector3D a1 = w2 - w0;
+        Vector3D a2 = w3 - w0;
+    
+        Matrix3x3 a({a0.x_,a1.x_,a2.x_,a0.y_,a1.y_,a2.y_,a0.z_,a1.z_,a2.z_});
+        float detA = a.getDeterminant();
+        volume += (detA/6.0f);
+        Matrix3x3 aT = a.transpose();
+        
+        Matrix3x3 c = (a * (canonical * aT)) * detA;
+        cAccum = cAccum + c;
+        faceCount++;
+    }
+    xMean/=(faceCount*3);
+    yMean/=(faceCount*3);
+    zMean/=(faceCount*3);
+    
+    std::cout << "Mean: " << xMean << " " << yMean << " " << zMean << std::endl;
+    std::cout << "Min: " << xMin << " " << yMin << " " << zMin << std::endl;
+    std::cout << "Max: " << xMax << " " << yMax << " " << zMax << std::endl;
+    std::cout << "Volume:" << volume << std::endl;
+
+    cAccum.print();
+    Matrix3x3 identity;
+    Matrix3x3 I = ((identity * cAccum.getTrace()) - cAccum);
+    I.print();
+    
+    Vector3D COG(xMean,yMean,zMean);
+    Vector3D delta = COG * -1.0f;
+    float mass = volume * density;
+    
+    //change of origin
+    
+    Matrix3x3 cPrime = cAccum + ((Matrix3x3(delta,COG) + Matrix3x3(COG,delta) + Matrix3x3(delta,delta)) * mass);
+                                 
+    cPrime.print();
+    I = ((identity * cPrime.getTrace()) - cPrime);
+    I.print();
+    
 }

@@ -1,0 +1,35 @@
+# Translated closed cuboid: dimensions 2 x 4 x 6; density 1
+# COM (3, -2, 5); volume and mass 48
+# Triangles are consistently outward wound. All face references use v/vt/vn.
+o translated_cuboid
+v 2 -4 2
+v 4 -4 2
+v 4 0 2
+v 2 0 2
+v 2 -4 8
+v 4 -4 8
+v 4 0 8
+v 2 0 8
+vt 0 0
+vt 1 0
+vt 1 1
+vt 0 1
+vn 0 0 -1
+vn 0 0 1
+vn 0 -1 0
+vn 0 1 0
+vn -1 0 0
+vn 1 0 0
+s off
+f 1/1/1 4/2/1 3/3/1
+f 1/1/1 3/3/1 2/4/1
+f 5/1/2 6/2/2 7/3/2
+f 5/1/2 7/3/2 8/4/2
+f 1/1/3 2/2/3 6/3/3
+f 1/1/3 6/3/3 5/4/3
+f 4/1/4 8/2/4 7/3/4
+f 4/1/4 7/3/4 3/4/4
+f 1/1/5 5/2/5 8/3/5
+f 1/1/5 8/3/5 4/4/5
+f 2/1/6 3/2/6 7/3/6
+f 2/1/6 7/3/6 6/4/6

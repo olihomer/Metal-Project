@@ -23,8 +23,8 @@ constant half3 colors[] =
 
 struct Vertex
 {
-    float4 position;
-    float3 normal;
+    packed_float4 position;
+    packed_float3 normal;
 };
 
 struct VertexData
@@ -39,10 +39,10 @@ VertexData vertex vertexMain(constant Vertex* vertices [[buffer(0)]], uint verte
 {
     VertexData data;
     Vertex v = vertices[vertexID];
-    data.position = model * v.position;
+    data.position = model * float4(v.position);
     data.position = camera.view * data.position;
     data.position = camera.projection * data.position;
-    data.normal = v.normal;
+    data.normal = normalize((model * float4(float3(v.normal), 0.0)).xyz);
     data.color = colors[vertexID % 3];
     return data;
 }
@@ -54,14 +54,13 @@ half4 fragment fragmentMain(VertexData frag [[stage_in]], uint primitive [[primi
     
     float kd = 0.7; //diffuse reflection
     float3 id = float3(colors[primitive%3]); //diffuse light source
-    float3 light_direction = float3(2.0,5.0,-5.0);
+    float3 light_direction = normalize(float3(2.0,5.0,-5.0));
     
     float amount_diffuse_light = max(0.0,dot(light_direction, frag.normal));
     
     float3 diffuse_light = kd * id * amount_diffuse_light; //diffuse component
     
     return half4(half3(diffuse_light),1.0);
-    
     
 }
 

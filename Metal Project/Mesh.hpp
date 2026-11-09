@@ -45,6 +45,7 @@ public:
     std::size_t gpuMeshIndex_;
 private:
     std::string assetName_;
+    void ComputeInertia();
 };
 
 

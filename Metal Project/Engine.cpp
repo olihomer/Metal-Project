@@ -51,7 +51,7 @@ void Engine::RunApp()
     
     auto myEntity = world_.newEntity("Dog");
 
-    loadMeshAsset("sphere.obj", "sphere");
+    loadMeshAsset("translated_cuboid_2x4x6.obj", "sphere");
     
     world_.addComponent<Transform>(myEntity,Vector3D(-5,5,8));
     world_.addComponent<RigidBody>(myEntity);

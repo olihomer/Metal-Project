@@ -16,8 +16,8 @@
 #include "Mesh.hpp"
 #include <map>
 
-constexpr float MOVEMENT_SPEED = 0.3f;
-constexpr float MOUSE_SENSITIVIY = 0.005f;
+constexpr float MOVEMENT_SPEED = 0.2f;
+constexpr float MOUSE_SENSITIVIY = 0.002f;
 
 class Engine
 {
