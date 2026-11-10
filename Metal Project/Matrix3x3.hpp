@@ -166,36 +166,23 @@ public:
         return mat_[0][0]+mat_[1][1]+mat_[2][2];
     }
 
-    void invert()
+    Matrix3x3 invert()
     {
-        int a, i, j;
-        Matrix3x3 out;
-        Vector4D v, vec[3];
-        float det = 0.0f;
+        float det = getDeterminant();
+        Matrix3x3 cof;
+        cof.mat_[0][0] =  (mat_[1][1] * mat_[2][2])-(mat_[1][2] * mat_[2][1]);
+        cof.mat_[0][1] = -((mat_[1][0] * mat_[2][2])-(mat_[1][2] * mat_[2][0]));
+        cof.mat_[0][2] =  (mat_[1][0] * mat_[2][1])-(mat_[1][1] * mat_[2][0]);
+        cof.mat_[1][0] = -((mat_[0][1] * mat_[2][2])-(mat_[0][2] * mat_[2][1]));
+        cof.mat_[1][1] =  (mat_[0][0] * mat_[2][2])-(mat_[0][2] * mat_[2][0]);
+        cof.mat_[1][2] = -((mat_[0][0] * mat_[2][1])-(mat_[0][1] * mat_[2][0]));
+        cof.mat_[2][0] =  (mat_[0][1] * mat_[1][2])-(mat_[0][2] * mat_[1][1]);
+        cof.mat_[2][1] = -((mat_[0][0] * mat_[1][2])-(mat_[0][2] * mat_[1][0]));
+        cof.mat_[2][2] =  (mat_[0][0] * mat_[1][1])-(mat_[0][1] * mat_[1][0]);
 
-        det = this->getDeterminant();
-        if (!det) return;
-        for (i = 0; i < 3; i++)
-        {
-            for (j = 0; j < 3; j++)
-            {
-                if (j != i)
-                {
-                    a = j;
-                    if (j > i) a = a - 1;
-                    vec[a].x_ = (this->mat_[j][0]);
-                    vec[a].y_ = (this->mat_[j][1]);
-                    vec[a].z_ = (this->mat_[j][2]);
-                }
-            }
-            v.cross(vec[0], vec[1], vec[2]);
-
-            out.mat_[0][i] = (powf(-1.0f, (float)i) * v.x_ / det);
-            out.mat_[1][i] = (powf(-1.0f, (float)i) * v.y_ / det);
-            out.mat_[2][i] = (powf(-1.0f, (float)i) * v.z_ / det);
-        }
-
-        this->setMatrix(out);
+        Matrix3x3 inv = cof.transpose() * (1/det);
+        
+        return inv;
     }
 
     Matrix3x3 transpose() const
