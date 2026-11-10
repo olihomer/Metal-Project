@@ -150,7 +150,7 @@ void MeshAsset::ComputeInertia()
     float xMin{}, yMin{}, zMin{};
     float xMax{}, yMax{}, zMax{};
     double mass{}, massTetra{};
-    double density = 1.0;
+    double density = 1.0; //calculate for unit density
     Vector3Dd COG;
     
     int faceCount = 0;
@@ -205,7 +205,7 @@ void MeshAsset::ComputeInertia()
     Matrix3x3d inverse = I.invert();
     inverse.print();
     
-    Vector3Dd delta = COG * -1.0f;
+    Vector3Dd delta = COG * -1.0;
     
     //change of origin
     
@@ -215,4 +215,14 @@ void MeshAsset::ComputeInertia()
     std::cout << "Inertia tensor around COG:" << std::endl;
     I.print();
     
+    inverseBodyInertia_ = I.invert();
+    massAtUnitDensity_ = mass;
+    
+    //translate COG to origin
+    if(delta.magnitude()>0.0001)
+    {
+        for(std::size_t i = 0; i < vertices.size(); i++)
+            vertices[i].vx_coords += delta;
+    }
+       
 }

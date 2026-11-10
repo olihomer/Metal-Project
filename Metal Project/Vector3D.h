@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+#include "Vector3Dd.hpp"
 
 	class Vector3D {
 	public:
@@ -37,7 +38,23 @@
 			sum.z_ = vector.z_ + z_;
 			return sum;
 		}
-
+        
+        Vector3D& operator+=(const Vector3D& vector)
+        {
+            x_ = vector.x_ + x_;
+            y_ = vector.y_ + y_;
+            z_ = vector.z_ + z_;
+            return *this;
+        }
+        
+        Vector3D& operator+=(const Vector3Dd& vector)
+        {
+            x_ = vector.x_ + x_;
+            y_ = vector.y_ + y_;
+            z_ = vector.z_ + z_;
+            return *this;
+        }
+        
 		Vector3D operator-(const Vector3D& vector)
 		{
 			Vector3D diff;

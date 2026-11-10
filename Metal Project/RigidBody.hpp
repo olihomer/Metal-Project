@@ -10,7 +10,9 @@
 
 #include "Pool.hpp"
 #include "Vector3D.h"
+#include "Matrix3x3d.hpp"
 #include "Collider.hpp"
+#include "Mesh.hpp"
 
 class RigidBody
 {
@@ -19,6 +21,8 @@ public:
 
     float mass = 1.0f;
     float momentInertia = 0.4f * mass;
+    Matrix3x3d inverseBodyInertia;
+    Matrix3x3d inverseWorldInertia;
     Vector3D velocity = Vector3D(5.0f,0.0f,0.0f);
     Vector3D angularVelocity = Vector3D(0,0.2f,0.5f);
     Vector3D cogOffset = Vector3D(0,0,0);

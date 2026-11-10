@@ -11,7 +11,9 @@
 #include "Pool.hpp"
 #include "Vector2D.h"
 #include "Vector3D.h"
+#include "Vector3Dd.hpp"
 #include "Vector4D.h"
+#include "Matrix3x3d.hpp"
 #include <vector>
 #include <string>
 
@@ -46,6 +48,8 @@ public:
 private:
     std::string assetName_;
     void ComputeInertia();
+    Matrix3x3d inverseBodyInertia_;
+    double massAtUnitDensity_;
 };
 
 
@@ -59,6 +63,7 @@ public:
     }
     std::size_t meshIndex_;
     std::size_t gpuMeshIndex_;
+    
 private:
 };
 

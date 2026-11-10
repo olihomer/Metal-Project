@@ -5,11 +5,11 @@
 //  Created by Oliver Homer on 10/11/2026.
 //
 
-
 #pragma once
 #include <iostream>
 #include <cmath>
-#include "Vector3D.h"
+
+class Vector3D;
 
     class Vector3Dd {
     public:
@@ -22,8 +22,7 @@
         {}
         Vector3Dd(double x, double y, double z) :x_(x), y_(y), z_(z)
         {}
-        Vector3Dd(const Vector3D& v): x_(v.x_), y_(v.y_), z_(v.z_)
-        {}
+        Vector3Dd(const Vector3D& v);
 
 
         static double dot(const Vector3Dd& u, const Vector3Dd& v)
