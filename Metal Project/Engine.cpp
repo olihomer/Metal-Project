@@ -49,13 +49,14 @@ void Engine::RunApp()
 {
     std::cout << "RunApp()" << std::endl;
     
-    auto myEntity = world_.newEntity("Dog");
+    auto myEntity = world_.newEntity("Entity");
 
-    loadMeshAsset("translated_cuboid_2x4x6.obj", "sphere");
+    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid");
     
     world_.addComponent<Transform>(myEntity,Vector3D(-5,5,8));
-    world_.addComponent<RigidBody>(myEntity);
-    world_.addComponent<Mesh>(myEntity,getMeshReference("sphere"));
+    world_.addComponent<Mesh>(myEntity,getMeshReference("cuboid"));
+    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),5.0f);
+
     
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
     if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
@@ -99,4 +100,15 @@ std::pair<std::size_t,std::size_t> Engine::getMeshReference(std::string assetNam
         throw std::runtime_error("Asset name not found");
     }
     return std::pair<std::size_t,std::size_t>(meshLookup_[assetName],meshAssets_[meshLookup_[assetName]].gpuMeshIndex_);
+}
+
+
+MeshAsset::physics Engine::getPhysics(std::string assetName)
+{
+    if(meshLookup_.find(assetName)==meshLookup_.end())
+    {
+        throw std::runtime_error("Asset name not found");
+    }
+    return meshAssets_[meshLookup_[assetName]].physics_;
+    
 }

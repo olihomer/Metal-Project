@@ -32,16 +32,18 @@ void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& tra
     transform.position_ = transform.position_ + rigidbody.velocity * dt;
     
     //angular position
-    Vector3D torque;
-    Vector3D angularAcceleration = torque * (1/rigidbody.momentInertia);
+    Vector3Dd torque(10,10,10);
+    Vector3Dd angularAcceleration = rigidbody.inverseBodyInertia * torque;
+    angularAcceleration.print("Angular Acc");
     rigidbody.angularVelocity = rigidbody.angularVelocity + angularAcceleration * dt;
+    rigidbody.angularVelocity.print("Angular V");
     
-    Vector3D omega = rigidbody.angularVelocity;
+    Vector3Dd omega = rigidbody.angularVelocity;
     float speed = omega.magnitude();
     
     if(speed > 1e-6)
     {
-        Vector3D axis = omega * (1.0f / speed);
+        Vector3Dd axis = omega * (1.0f / speed);
         
         Quaternion deltaRotation;
         deltaRotation.setRotationAroundAxis(speed * dt, axis);
@@ -92,7 +94,7 @@ Vector3D PhysicsSystem::accumulateForces(const Transform& transform, RigidBody& 
         {
             float frictionCap = frictionDirection.magnitude() * rigidbody.mass * (1/dt);
             frictionDirection.normalize();
-            float frictionMagnitude = std::min(rigidbody.mu * rigidbody.mass * gravity, frictionCap);
+            float frictionMagnitude = std::min(rigidbody.mu * (float)rigidbody.mass * gravity, frictionCap);
             frictionForce = frictionDirection * frictionMagnitude;
         }
     }

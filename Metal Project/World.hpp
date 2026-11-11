@@ -50,7 +50,7 @@ public:
     bool hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType type);
     void deleteEntity(ECS::Handle<ECS::Entity> handle);
     void printEntities(){entityManager_.entities_.print();}
-    
+        
     Camera* getCamera(){return getComponent<Camera>(cameraEntity_);}
     
 private:

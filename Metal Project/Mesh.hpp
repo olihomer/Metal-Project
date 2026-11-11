@@ -45,11 +45,15 @@ public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::size_t gpuMeshIndex_;
+    struct physics
+    {
+        Matrix3x3d inverseBodyInertia_;
+        double massAtUnitDensity_;
+    }physics_;
+
 private:
     std::string assetName_;
     void ComputeInertia();
-    Matrix3x3d inverseBodyInertia_;
-    double massAtUnitDensity_;
 };
 
 

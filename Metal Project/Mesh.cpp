@@ -215,8 +215,8 @@ void MeshAsset::ComputeInertia()
     std::cout << "Inertia tensor around COG:" << std::endl;
     I.print();
     
-    inverseBodyInertia_ = I.invert();
-    massAtUnitDensity_ = mass;
+    physics_.inverseBodyInertia_ = I.invert();
+    physics_.massAtUnitDensity_ = mass;
     
     //translate COG to origin
     if(delta.magnitude()>0.0001)

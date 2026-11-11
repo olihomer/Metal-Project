@@ -74,6 +74,15 @@ public:
         return out;
     }
     
+    Vector3Dd operator *(Vector3Dd& vector)
+    {
+        Vector3Dd out;
+        out.x_ = mat_[0][0] * vector.x_ + mat_[0][1] * vector.y_ + mat_[0][2] * vector.z_;
+        out.y_ = mat_[1][0] * vector.x_ + mat_[1][1] * vector.y_ + mat_[1][2] * vector.z_;
+        out.z_ = mat_[2][0] * vector.x_ + mat_[2][1] * vector.y_ + mat_[2][2] * vector.z_;
+        return out;
+    }
+    
     Matrix3x3d operator+(Matrix3x3d in)
     {
         Matrix3x3d out;

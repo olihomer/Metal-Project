@@ -24,4 +24,3 @@ bool World::hasComponent(ECS::Handle<ECS::Entity> entity, ECS::ComponentType typ
 {
     return entityManager_.hasComponent(entity, type);
 }
-

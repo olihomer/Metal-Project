@@ -98,6 +98,10 @@ class Vector3D;
             }
         }
 
+        void print(std::string comment)
+        {
+            std::cout << comment << ": " << x_ << "," << y_ << "," << z_ << std::endl;
+        }
     };
 
 

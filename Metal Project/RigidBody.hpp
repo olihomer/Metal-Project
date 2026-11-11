@@ -18,14 +18,17 @@ class RigidBody
 {
 public:
     RigidBody(){;};
+    RigidBody(MeshAsset::physics physics, double density = 1.0)
+    {
+        inverseBodyInertia = physics.inverseBodyInertia_ * (1/density);
+        mass = physics.massAtUnitDensity_ * density;
+    }
 
-    float mass = 1.0f;
-    float momentInertia = 0.4f * mass;
+    double mass = 1.0;
     Matrix3x3d inverseBodyInertia;
     Matrix3x3d inverseWorldInertia;
     Vector3D velocity = Vector3D(5.0f,0.0f,0.0f);
-    Vector3D angularVelocity = Vector3D(0,0.2f,0.5f);
-    Vector3D cogOffset = Vector3D(0,0,0);
+    Vector3Dd angularVelocity = Vector3D(0,0.2f,0.5f);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
     float mu = 0.5f;

@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector3D.h"
+#include "Vector3Dd.hpp"
 #include "Vector4D.h"
 #include "Matrix4x4.h"
 
@@ -58,6 +59,14 @@ public:
 		v_.y_ = sinf(0.5f * theta) * axis.y_;
 		v_.z_ = sinf(0.5f * theta) * axis.z_;
 	}
+    
+    void setRotationAroundAxis(float theta, const Vector3Dd& axis) //RADIANS
+    {
+        w_ = cosf(0.5f * theta);
+        v_.x_ = sinf(0.5f * theta) * axis.x_;
+        v_.y_ = sinf(0.5f * theta) * axis.y_;
+        v_.z_ = sinf(0.5f * theta) * axis.z_;
+    }
 
 	static void rotatePointAroundVector(Vector3D& point, float theta, const Vector3D& axis) //RADIANS
 	{
