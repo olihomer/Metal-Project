@@ -39,8 +39,8 @@ struct Vertex
 class MeshAsset
 {
 public:
-    MeshAsset(std::string filename, std::string assetName);
-    void Load(const char* filename);
+    MeshAsset(std::string filename, std::string assetName, double scaleFactor);
+    void Load(const char* filename, double scaleFactor);
 
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;

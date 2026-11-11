@@ -37,7 +37,7 @@ public:
     void MouseMoved(float dx, float dy);
     bool shouldQuit(){return shouldQuit_;}
     void requestQuit(){shouldQuit_ = true;}
-    void loadMeshAsset(std::string filename, std::string assetName);
+    void loadMeshAsset(std::string filename, std::string assetName, double scaleFactor);
     
     std::pair<std::size_t,std::size_t> getMeshReference(std::string assetName);
     MeshAsset::physics getPhysics(std::string assetName);

@@ -24,7 +24,7 @@ void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& tra
     //accumulate and apply forces
     Vector3D netForce = accumulateForces(transform, rigidbody, dt);
     Vector3D acceleration = netForce * (1.0f/rigidbody.mass);
-
+    
     //Symplectic Euler Integration
     
     //linear position
@@ -32,7 +32,7 @@ void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& tra
     transform.position_ = transform.position_ + rigidbody.velocity * dt;
     
     //angular position
-    Vector3Dd torque(10,10,10);
+    Vector3Dd torque(0,0,0);
     Vector3Dd angularAcceleration = rigidbody.inverseBodyInertia * torque;
     angularAcceleration.print("Angular Acc");
     rigidbody.angularVelocity = rigidbody.angularVelocity + angularAcceleration * dt;

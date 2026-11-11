@@ -51,15 +51,15 @@ void Engine::RunApp()
     
     auto myEntity = world_.newEntity("Entity");
 
-    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid");
+    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid", 0.1);
     
-    world_.addComponent<Transform>(myEntity,Vector3D(-5,5,8));
+    world_.addComponent<Transform>(myEntity,Vector3D(0,0,0));
     world_.addComponent<Mesh>(myEntity,getMeshReference("cuboid"));
-    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),5.0f);
+    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),800);
 
     
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
-    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0f);
+    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 0.1f);
     
 }
 
@@ -80,13 +80,13 @@ void Engine::MouseMoved(float dx, float dy)
     camera->Pitch(MOUSE_SENSITIVIY * dy);
 }
 
-void Engine::loadMeshAsset(std::string filename, std::string assetName)
+void Engine::loadMeshAsset(std::string filename, std::string assetName, double scaleFactor)
 {
     if(meshLookup_.find(assetName)!=meshLookup_.end())
     {
         throw std::runtime_error("Duplicate asset name");
     }
-    MeshAsset temp(filename, assetName);
+    MeshAsset temp(filename, assetName, scaleFactor);
     renderSystem_.prepareMeshBuffers(temp);
     meshAssets_.push_back(temp);
     meshLookup_[assetName] = meshAssets_.size() - 1;

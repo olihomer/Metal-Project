@@ -39,7 +39,7 @@ struct VertexKeyHash
 };
 
 
-MeshAsset::MeshAsset(std::string filename, std::string assetName)
+MeshAsset::MeshAsset(std::string filename, std::string assetName, double scaleFactor)
 : assetName_(assetName)
 {
     NS::String* resourcePath = NS::Bundle::mainBundle()->resourcePath();
@@ -50,12 +50,12 @@ MeshAsset::MeshAsset(std::string filename, std::string assetName)
 
     std::string objPath = resourcePath->utf8String();
     objPath += "/" + filename;
-    Load(objPath.c_str());
+    Load(objPath.c_str(), scaleFactor);
     ComputeInertia();
 }
 
 
-void MeshAsset::Load(const char* filename)
+void MeshAsset::Load(const char* filename, double scaleFactor)
 {
     using namespace tinyobj;
     std::unordered_map<index_t, uint32_t, VertexKeyHash> lookup;
@@ -107,9 +107,9 @@ void MeshAsset::Load(const char* filename)
                 {
                     uint32_t newIndex = static_cast<uint32_t>(vertices.size());
                     
-                    real_t vx = attrib.vertices[index.vertex_index * 3 + 0];
-                    real_t vy = attrib.vertices[index.vertex_index * 3 + 1];
-                    real_t vz = attrib.vertices[index.vertex_index * 3 + 2];
+                    real_t vx = attrib.vertices[index.vertex_index * 3 + 0] * scaleFactor;
+                    real_t vy = attrib.vertices[index.vertex_index * 3 + 1] * scaleFactor;
+                    real_t vz = attrib.vertices[index.vertex_index * 3 + 2] * scaleFactor;
                     
                     real_t tx{},ty{},nx{},ny{},nz{};
                     if(index.texcoord_index * 2>-1)
@@ -143,9 +143,7 @@ void MeshAsset::ComputeInertia()
 {
     Matrix3x3d canonical({1.0/60.0,1.0/120.0,1.0/120.0,1.0/120.0,1.0/60.0,1.0/120.0,1.0/120.0,1.0/120.0,1.0/60.0});
     Matrix3x3d cAccum({0,0,0,0,0,0,0,0,0});
-    
-    canonical.print();
-    
+        
     double xMean{}, yMean{}, zMean{};
     float xMin{}, yMin{}, zMin{};
     float xMax{}, yMax{}, zMax{};
@@ -192,7 +190,7 @@ void MeshAsset::ComputeInertia()
 
     COG = COG * (1.0/mass);
     
-    std::cout << "Mass: " << mass << std::endl;
+    std::cout << "Mass at unit density: " << mass << std::endl;
     std::cout << "COG: " << COG.x_ << "," << COG.y_ << "," << COG.z_ << std::endl;
     
     std::cout << "Min: " << xMin << " " << yMin << " " << zMin << std::endl;
@@ -200,10 +198,8 @@ void MeshAsset::ComputeInertia()
 
     Matrix3x3d identity;
     Matrix3x3d I = ((identity * cAccum.getTrace()) - cAccum);
-    std::cout << "Inertia tensor around origin:" << std::endl;
-    I.print();
     Matrix3x3d inverse = I.invert();
-    inverse.print();
+
     
     Vector3Dd delta = COG * -1.0;
     
@@ -212,11 +208,12 @@ void MeshAsset::ComputeInertia()
     Matrix3x3d cPrime = cAccum + ((Matrix3x3d(delta,COG) + Matrix3x3d(COG,delta) + Matrix3x3d(delta,delta)) * mass);
                                  
     I = ((identity * cPrime.getTrace()) - cPrime);
-    std::cout << "Inertia tensor around COG:" << std::endl;
-    I.print();
+    I.print("Inertia tensor around COG");
     
     physics_.inverseBodyInertia_ = I.invert();
     physics_.massAtUnitDensity_ = mass;
+    
+    physics_.inverseBodyInertia_.print("Inverse tensor around COG");
     
     //translate COG to origin
     if(delta.magnitude()>0.0001)

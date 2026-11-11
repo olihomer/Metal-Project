@@ -137,8 +137,9 @@ public:
             }
     }
 
-    void print()
+    void print(std::string comment)
     {
+        std::cout << comment << ":" << std::endl;
         for(int r=0;r<3;r++)
         {
             for(int c=0;c<3;c++)

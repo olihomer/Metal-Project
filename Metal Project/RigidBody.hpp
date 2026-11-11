@@ -18,17 +18,19 @@ class RigidBody
 {
 public:
     RigidBody(){;};
-    RigidBody(MeshAsset::physics physics, double density = 1.0)
+    RigidBody(MeshAsset::physics physics, double density = 800)
     {
         inverseBodyInertia = physics.inverseBodyInertia_ * (1/density);
         mass = physics.massAtUnitDensity_ * density;
+        std::cout << "Creating rigid body with mass: " << mass << std::endl;
+        inverseBodyInertia.print("Inverse body inertia");
     }
 
     double mass = 1.0;
     Matrix3x3d inverseBodyInertia;
     Matrix3x3d inverseWorldInertia;
-    Vector3D velocity = Vector3D(5.0f,0.0f,0.0f);
-    Vector3Dd angularVelocity = Vector3D(0,0.2f,0.5f);
+    Vector3D velocity = Vector3D(0.0f,0.0f,0.0f);
+    Vector3Dd angularVelocity = Vector3D(0.0f,0.0f,0.0f);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
     float mu = 0.5f;
