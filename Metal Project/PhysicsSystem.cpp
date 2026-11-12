@@ -10,40 +10,48 @@
 constexpr bool showDebug = false;
 
 
-void PhysicsSystem::updatePhysics(World& world, double dt) const
+void PhysicsSystem::updatePhysics(World& world, double dt)
 {
     if(showDebug)std::cout << "updatePhysics " << dt << std::endl;
     
-    world.each<Transform,RigidBody>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody)
-        {updateEntity(entity,transform,rigidbody,dt);});
+    integrateVelocities(world, dt);
+    
+    auto contacts = detectCollisions(world);
+    
+    solveContacts(world, contacts, dt);
+    
+    integratePositions(world, dt);
+    
+    correctPenetrations(world);
 }
 
 
-void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt) const
+void PhysicsSystem::integrateVelocities(World& world, double dt)
 {
-    //accumulate and apply forces
-    Vector3D netForce = accumulateForces(transform, rigidbody, dt);
-    Vector3D acceleration = netForce * (1.0f/rigidbody.mass);
-    
-    //Symplectic Euler Integration
-    
-    //linear position
-    rigidbody.velocity = rigidbody.velocity + acceleration * dt;
+    world.each<Transform,RigidBody>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody)
+        {integrateEntityVelocities(transform,rigidbody,dt);});
+}
+
+void PhysicsSystem::integratePositions(World& world, double dt)
+{
+    world.each<Transform,RigidBody>([&](ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody)
+        {integrateEntityPositions(transform,rigidbody,dt);});
+}
+
+
+
+void PhysicsSystem::integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt)
+{
+
     transform.position_ = transform.position_ + rigidbody.velocity * dt;
-    
-    //angular position
-    Vector3Dd torque(0,0,0);
-    Vector3Dd angularAcceleration = rigidbody.inverseBodyInertia * torque;
-    angularAcceleration.print("Angular Acc");
-    rigidbody.angularVelocity = rigidbody.angularVelocity + angularAcceleration * dt;
-    rigidbody.angularVelocity.print("Angular V");
-    
+
     Vector3Dd omega = rigidbody.angularVelocity;
-    float speed = omega.magnitude();
+    double speed = omega.magnitude();
     
+    //update rotation position
     if(speed > 1e-6)
     {
-        Vector3Dd axis = omega * (1.0f / speed);
+        Vector3Dd axis = omega * (1.0 / speed);
         
         Quaternion deltaRotation;
         deltaRotation.setRotationAroundAxis(speed * dt, axis);
@@ -52,17 +60,39 @@ void PhysicsSystem::updateEntity(ECS::Handle<ECS::Entity> entity, Transform& tra
         transform.rotation_.normalise();
     }
     
-    //resolve collisions
-    resolveCollisions(transform, rigidbody);
+    //recompute inertia
+    rigidbody.updateWorldInertia(transform.rotation_);
+    //recompute angular velocity
+    rigidbody.angularVelocity = rigidbody.angularMomentum * rigidbody.inverseWorldInertia;
+
+    //track KE
+    double transKE = 0.5 * rigidbody.mass * pow(rigidbody.velocity.magnitude(),2);
+    double rotKE = 0.5 * Vector3Dd::dot(rigidbody.angularVelocity,rigidbody.angularMomentum);
+    double totalKE = transKE + rotKE;
     
-    //apply damping to low velocities
-    applyDamping(rigidbody);
+    std::cout << "TransKE: " << transKE << " RotKE: " << rotKE << " TotalKE: " << totalKE << std::endl;
+}
+
+void PhysicsSystem::integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt)
+{
+    //accumulate and apply forces
+    Vector3D netForce = accumulateForces(transform, rigidbody, dt);
+    Vector3D acceleration = netForce * (1.0f/rigidbody.mass);
+        
+    //linear velocity
+    rigidbody.velocity = rigidbody.velocity + acceleration * dt;
     
-    if(showDebug)
-    {
-        std::cout << "Position: " << transform.position_ << std::endl;
-        std::cout << "Velocity:" << rigidbody.velocity << std::endl;
-    }
+    //angular velocity
+    Matrix3x3d R = transform.rotation_.toMatrix3x3d();
+    Matrix3x3d RT = R.transpose();
+    rigidbody.inverseWorldInertia = RT * rigidbody.inverseBodyInertia * R;
+    rigidbody.worldInertia = RT * rigidbody.bodyInertia * R;
+
+    Vector3Dd torque(0,0,0);
+
+    rigidbody.angularMomentum += torque * dt;
+    rigidbody.angularVelocity = rigidbody.angularMomentum * rigidbody.inverseWorldInertia;
+    
 }
 
 
@@ -142,3 +172,21 @@ void PhysicsSystem::applyDamping(RigidBody &rigidbody) const
     if(std::abs(rigidbody.velocity.z_) < minVelocity)rigidbody.velocity.z_ = 0.0f;
     
 }
+
+
+void PhysicsSystem::solveContacts(World &world, std::vector<Contact> contacts, double dt)
+{
+    
+}
+
+void PhysicsSystem::correctPenetrations(World &world)
+{
+    
+}
+
+std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
+{
+    return std::vector<Contact>{};
+}
+
+

@@ -13,6 +13,7 @@
 #include "Matrix3x3d.hpp"
 #include "Collider.hpp"
 #include "Mesh.hpp"
+#include "Quaternion.h"
 
 class RigidBody
 {
@@ -21,22 +22,28 @@ public:
     RigidBody(MeshAsset::physics physics, double density = 800)
     {
         inverseBodyInertia = physics.inverseBodyInertia_ * (1/density);
+        bodyInertia = physics.bodyInertia_ * density;
         mass = physics.massAtUnitDensity_ * density;
         std::cout << "Creating rigid body with mass: " << mass << std::endl;
+        bodyInertia.print("Body inertia");
         inverseBodyInertia.print("Inverse body inertia");
     }
 
     double mass = 1.0;
+    Matrix3x3d bodyInertia;
+    Matrix3x3d worldInertia;
     Matrix3x3d inverseBodyInertia;
     Matrix3x3d inverseWorldInertia;
-    Vector3D velocity = Vector3D(0.0f,0.0f,0.0f);
-    Vector3Dd angularVelocity = Vector3D(0.0f,0.0f,0.0f);
+    Vector3D velocity = Vector3D(0.0,0.0,0.0);
+    Vector3Dd angularVelocity;
+    Vector3Dd angularMomentum = Vector3Dd(80.0,20.0,0.0);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
     float mu = 0.5f;
     float elasticity = 0.6f;
     void setCollider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0){collider_=  Collider(type,r,x,y,z);}
     Collider collider_{ColliderType::None};
+    void updateWorldInertia(Quaternion rotation);
     
 private:
 };

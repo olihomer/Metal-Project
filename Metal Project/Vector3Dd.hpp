@@ -9,6 +9,8 @@
 #include <iostream>
 #include <cmath>
 
+class Matrix3x3d;
+
 class Vector3D;
 
     class Vector3Dd {
@@ -39,6 +41,8 @@ class Vector3D;
             return temp;
         }
 
+        Vector3Dd operator*(const Matrix3x3d& rhs);
+        
         Vector3Dd operator+(const Vector3Dd& vector)
         {
             Vector3Dd sum;
@@ -48,6 +52,14 @@ class Vector3D;
             return sum;
         }
 
+        void operator+=(const Vector3Dd& vector)
+        {
+            x_ += vector.x_;
+            y_ += vector.y_;
+            z_ += vector.z_;
+        }
+
+        
         Vector3Dd operator-(const Vector3Dd& vector)
         {
             Vector3Dd diff;

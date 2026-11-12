@@ -30,13 +30,6 @@ public:
         mat_[2][2] = 1;
     }
 
-    void setTranslation(const Vector3D& translation)
-    {
-        mat_[3][0] = translation.x_;
-        mat_[3][1] = translation.y_;
-        mat_[3][2] = translation.z_;
-    }
-
     void setMatrix(Matrix3x3 matrix)
     {
         ::memcpy(&mat_, &matrix, sizeof(float) * 9);

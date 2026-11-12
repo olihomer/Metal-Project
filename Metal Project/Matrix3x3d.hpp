@@ -152,14 +152,14 @@ public:
     
     double getDeterminant()
     {
-        Vector3D minor, v1, v2, v3;
+        Vector3Dd minor, v1, v2, v3;
         double det;
 
-        v1 = Vector3D(this->mat_[0][0], this->mat_[1][0], this->mat_[2][0]);
-        v2 = Vector3D(this->mat_[0][1], this->mat_[1][1], this->mat_[2][1]);
-        v3 = Vector3D(this->mat_[0][2], this->mat_[1][2], this->mat_[2][2]);
+        v1 = Vector3Dd(this->mat_[0][0], this->mat_[1][0], this->mat_[2][0]);
+        v2 = Vector3Dd(this->mat_[0][1], this->mat_[1][1], this->mat_[2][1]);
+        v3 = Vector3Dd(this->mat_[0][2], this->mat_[1][2], this->mat_[2][2]);
 
-        det = Vector3D::dot(v1,Vector3D::cross(v2,v3));
+        det = Vector3Dd::dot(v1,Vector3Dd::cross(v2,v3));
                                  
         return det;
     }
@@ -172,6 +172,9 @@ public:
     Matrix3x3d invert()
     {
         double det = getDeterminant();
+        
+        if(det<0.0000001)throw std::runtime_error("Determinant close to zero, cannot invert matrix");
+        
         Matrix3x3d cof;
         cof.mat_[0][0] =  (mat_[1][1] * mat_[2][2])-(mat_[1][2] * mat_[2][1]);
         cof.mat_[0][1] = -((mat_[1][0] * mat_[2][2])-(mat_[1][2] * mat_[2][0]));

@@ -123,6 +123,15 @@ public:
 		setIdentity();
 	}
 	
+    Matrix4x4 transpose()
+    {
+        Matrix4x4 out;
+        for(int i = 0; i < 4; i++)
+            for(int j = 0; j < 4; j++)
+                out.mat_[i][j]=mat_[j][i];
+        return out;
+    }
+    
 	float getDeterminant()
 	{
 		Vector4D minor, v1, v2, v3;

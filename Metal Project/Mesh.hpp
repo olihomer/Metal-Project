@@ -48,6 +48,7 @@ public:
     struct physics
     {
         Matrix3x3d inverseBodyInertia_;
+        Matrix3x3d bodyInertia_;
         double massAtUnitDensity_;
     }physics_;
 

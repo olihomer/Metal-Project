@@ -51,11 +51,11 @@ void Engine::RunApp()
     
     auto myEntity = world_.newEntity("Entity");
 
-    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid", 0.1);
+    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid", 1.0);
     
     world_.addComponent<Transform>(myEntity,Vector3D(0,0,0));
     world_.addComponent<Mesh>(myEntity,getMeshReference("cuboid"));
-    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),800);
+    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),1);
 
     
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);

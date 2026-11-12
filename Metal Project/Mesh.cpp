@@ -198,8 +198,6 @@ void MeshAsset::ComputeInertia()
 
     Matrix3x3d identity;
     Matrix3x3d I = ((identity * cAccum.getTrace()) - cAccum);
-    Matrix3x3d inverse = I.invert();
-
     
     Vector3Dd delta = COG * -1.0;
     
@@ -210,6 +208,10 @@ void MeshAsset::ComputeInertia()
     I = ((identity * cPrime.getTrace()) - cPrime);
     I.print("Inertia tensor around COG");
     
+    Matrix3x3d temp;
+    temp.setIdentity();
+    temp = temp * 100;
+    physics_.bodyInertia_ = I;
     physics_.inverseBodyInertia_ = I.invert();
     physics_.massAtUnitDensity_ = mass;
     

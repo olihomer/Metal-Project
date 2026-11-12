@@ -3,6 +3,7 @@
 #include "Vector3Dd.hpp"
 #include "Vector4D.h"
 #include "Matrix4x4.h"
+#include "Matrix3x3d.hpp"
 
 constexpr auto DEG_RAD = 0.0174532925f;
 
@@ -124,6 +125,29 @@ public:
 		
 		return m;
 	}
+    
+    Matrix3x3d toMatrix3x3d()
+    {
+        Matrix3x3d m;
+        double qw = w_;
+        double qx = v_.x_;
+        double qy = v_.y_;
+        double qz = v_.z_;
+
+        m.mat_[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
+        m.mat_[0][1] = 2 * qx * qy + 2 * qz * qw;
+        m.mat_[0][2] = 2 * qx * qz - 2 * qy * qw;
+        
+        m.mat_[1][0] = 2 * qx * qy - 2 * qz * qw;
+        m.mat_[1][1] = 1 - 2 * qx * qx - 2 * qz * qz;
+        m.mat_[1][2] = 2 * qy * qz + 2 * qx * qw;
+
+        m.mat_[2][0] = 2 * qx * qz + 2 * qy * qw;
+        m.mat_[2][1] = 2 * qy * qz - 2 * qx * qw;
+        m.mat_[2][2] = 1 - 2 * qx * qx - 2 * qy * qy;
+        
+        return m;
+    }
 
 	Quaternion(Matrix4x4 m)
 	{
