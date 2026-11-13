@@ -173,7 +173,7 @@ public:
     {
         double det = getDeterminant();
         
-        if(det<0.0000001)throw std::runtime_error("Determinant close to zero, cannot invert matrix");
+        if(abs(det)<0.0000001)throw std::runtime_error("Determinant close to zero, cannot invert matrix");
         
         Matrix3x3d cof;
         cof.mat_[0][0] =  (mat_[1][1] * mat_[2][2])-(mat_[1][2] * mat_[2][1]);

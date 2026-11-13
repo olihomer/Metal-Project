@@ -209,8 +209,7 @@ void MeshAsset::ComputeInertia()
     I.print("Inertia tensor around COG");
     
     Matrix3x3d temp;
-    temp.setIdentity();
-    temp = temp * 100;
+
     physics_.bodyInertia_ = I;
     physics_.inverseBodyInertia_ = I.invert();
     physics_.massAtUnitDensity_ = mass;

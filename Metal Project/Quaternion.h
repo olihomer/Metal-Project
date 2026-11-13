@@ -9,22 +9,22 @@ constexpr auto DEG_RAD = 0.0174532925f;
 
 class Quaternion {
 private:
-	float w_; //real part
-	Vector3D v_; //vector part
+	double w_; //real part
+	Vector3Dd v_; //vector part
 public:
 	Quaternion() :w_(1.0f), v_() {}
-	Quaternion(float w, Vector3D v) :w_(w), v_(v) {}
-	Quaternion(float w, float x, float y, float z) :w_(w), v_(Vector3D(x,y,z)) {}
+	Quaternion(double w, Vector3Dd v) :w_(w), v_(v) {}
+	Quaternion(double w, double x, double y, double z) :w_(w), v_(Vector3Dd(x,y,z)) {}
 
-	Vector3D vectorPart(){return v_;}
-	float realPart(){return w_;}
+	Vector3Dd vectorPart(){return v_;}
+	double realPart(){return w_;}
 
 	Quaternion operator*(const Quaternion& q)
 	{
 		Quaternion t;
 		
-		t.w_ = w_ * q.w_ - Vector3D::dot(v_, q.v_);
-		t.v_ = (Vector3D(q.v_) * w_) + (Vector3D(v_) * q.w_) + Vector3D::cross(v_, q.v_);
+		t.w_ = w_ * q.w_ - Vector3Dd::dot(v_, q.v_);
+		t.v_ = (Vector3Dd(q.v_) * w_) + (Vector3Dd(v_) * q.w_) + Vector3Dd::cross(v_, q.v_);
 
 		return t;
 	}
@@ -41,42 +41,42 @@ public:
 	void setIdentity()
 	{
 		w_ = 1.0f;
-		v_ = Vector3D(0, 0, 0);
+		v_ = Vector3Dd(0, 0, 0);
 	}
 
-	float magnitude()
+	double magnitude()
 	{
-		float vmag = v_.magnitude();
+		double vmag = v_.magnitude();
 		vmag *= vmag;
 		vmag += w_ * w_;
 		return sqrtf(vmag);
 	}
 
 
-	void setRotationAroundAxis(float theta, const Vector3D& axis) //RADIANS
+	void setRotationAroundAxis(double theta, const Vector3D& axis) //RADIANS
 	{
-		w_ = cosf(0.5f * theta);
-		v_.x_ = sinf(0.5f * theta) * axis.x_;
-		v_.y_ = sinf(0.5f * theta) * axis.y_;
-		v_.z_ = sinf(0.5f * theta) * axis.z_;
+		w_ = cos(0.5 * theta);
+		v_.x_ = sin(0.5 * theta) * axis.x_;
+		v_.y_ = sin(0.5 * theta) * axis.y_;
+		v_.z_ = sin(0.5 * theta) * axis.z_;
 	}
     
-    void setRotationAroundAxis(float theta, const Vector3Dd& axis) //RADIANS
+    void setRotationAroundAxis(double theta, const Vector3Dd& axis) //RADIANS
     {
-        w_ = cosf(0.5f * theta);
-        v_.x_ = sinf(0.5f * theta) * axis.x_;
-        v_.y_ = sinf(0.5f * theta) * axis.y_;
-        v_.z_ = sinf(0.5f * theta) * axis.z_;
+        w_ = cos(0.5 * theta);
+        v_.x_ = sin(0.5 * theta) * axis.x_;
+        v_.y_ = sin(0.5 * theta) * axis.y_;
+        v_.z_ = sin(0.5 * theta) * axis.z_;
     }
 
-	static void rotatePointAroundVector(Vector3D& point, float theta, const Vector3D& axis) //RADIANS
+	static void rotatePointAroundVector(Vector3Dd& point, double theta, const Vector3D& axis) //RADIANS
 	{
 		Quaternion q,qbar;
 
-		q.w_ = cosf(0.5f * theta);
-		q.v_.x_ = sinf(0.5f * theta) * axis.x_;
-		q.v_.y_ = sinf(0.5f * theta) * axis.y_;
-		q.v_.z_ = sinf(0.5f * theta) * axis.z_;
+		q.w_ = cos(0.5 * theta);
+		q.v_.x_ = sin(0.5 * theta) * axis.x_;
+		q.v_.y_ = sin(0.5 * theta) * axis.y_;
+		q.v_.z_ = sin(0.5 * theta) * axis.z_;
 
 		qbar = q.getCongugate();
 
@@ -97,7 +97,7 @@ public:
 
 	void normalise()
 	{
-		float mag;
+		double mag;
 		mag = magnitude();
 		w_ *= (1/mag);
 		v_ = v_*(1/mag);
@@ -106,10 +106,10 @@ public:
 	Matrix4x4 toMatrix()
 	{
 		Matrix4x4 m;
-		float qw = w_;
-		float qx = v_.x_;
-		float qy = v_.y_;
-		float qz = v_.z_;
+		double qw = w_;
+		double qx = v_.x_;
+		double qy = v_.y_;
+		double qz = v_.z_;
 
 		m.mat_[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
 		m.mat_[0][1] = 2 * qx * qy + 2 * qz * qw;
@@ -151,7 +151,7 @@ public:
 
 	Quaternion(Matrix4x4 m)
 	{
-		float t;
+		double t;
 	
 		if (m.mat_[2][2] < 0)
 		{

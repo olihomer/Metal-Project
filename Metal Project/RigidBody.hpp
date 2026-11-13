@@ -27,16 +27,18 @@ public:
         std::cout << "Creating rigid body with mass: " << mass << std::endl;
         bodyInertia.print("Body inertia");
         inverseBodyInertia.print("Inverse body inertia");
+        invMass = 1/mass;
     }
 
     double mass = 1.0;
+    double invMass = 1.0;
     Matrix3x3d bodyInertia;
     Matrix3x3d worldInertia;
     Matrix3x3d inverseBodyInertia;
     Matrix3x3d inverseWorldInertia;
     Vector3D velocity = Vector3D(0.0,0.0,0.0);
     Vector3Dd angularVelocity;
-    Vector3Dd angularMomentum = Vector3Dd(80.0,20.0,0.0);
+    Vector3Dd angularMomentum = Vector3Dd(0.0,0.0,0.0);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
     float mu = 0.5f;

@@ -11,12 +11,29 @@
 #include "World.hpp"
 
 constexpr float touchingDistance = 0.01f;
+constexpr float collisionThreshold = 0.01f;
+
+
+struct CollisionCandidate
+{
+    ECS::Handle<ECS::Entity> entity;
+    RigidBody* rigidbody;
+    Transform* transform;
+};
 
 struct Contact
 {
-    ECS::Handle<ECS::Entity> entity1;
-    ECS::Handle<ECS::Entity> entity2;
-    Vector3Dd worldLocation;
+    CollisionCandidate entity1;
+    CollisionCandidate entity2;
+    Vector3D worldLocation;
+    Vector3D worldNormal;
+    double penetrationDepth;
+};
+
+struct ForceAccumulator
+{
+    Vector3D netForce;
+    Vector3Dd netTorque;
 };
 
 class PhysicsSystem
@@ -34,18 +51,16 @@ private:
     static constexpr float stickingThreshold = 0.05f;
     static constexpr float zeroRestitutionThreshold = 0.005f;
         
-    void updateEntity(ECS::Handle<ECS::Entity> entity, Transform& transform, RigidBody& rigidbody, double dt);
     void resolveCollisions(Transform& transform, RigidBody& rigidbody) const;
-    Vector3D accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const;
+    ForceAccumulator accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const;
     void integrateVelocities(World& world, double dt);
     void integratePositions(World& world, double dt);
     void integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt);
     void integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt);
     std::vector<Contact> detectCollisions(World& world);
-    void solveContacts(World& world, std::vector<Contact> contacts, double dt);
+    void solveContacts(World& world, const std::vector<Contact>& contacts, double dt);
     void correctPenetrations(World& world);
     
-    bool touchingGround(const Transform& transform, RigidBody& rigidbody) const;
     void applyDamping(RigidBody& rigidbody) const;
 };
 

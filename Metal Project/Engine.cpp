@@ -8,6 +8,34 @@
 #include "Engine.hpp"
 
 
+
+void Engine::RunApp()
+{
+    std::cout << "RunApp()" << std::endl;
+    
+    loadMeshAsset("sphere.obj", "sphere", 1.0);
+
+    auto myEntity = world_.newEntity("Entity");
+    auto myEntity2 = world_.newEntity("Entity2");
+
+    world_.addComponent<Transform>(myEntity,Vector3D(0,0,0));
+    world_.addComponent<Mesh>(myEntity,getMeshReference("sphere"));
+    world_.addComponent<RigidBody>(myEntity,getPhysics("sphere"),1);
+
+    RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
+    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
+    
+    world_.addComponent<Transform>(myEntity2,Vector3D(3,3,0));
+    world_.addComponent<Mesh>(myEntity2,getMeshReference("sphere"));
+    world_.addComponent<RigidBody>(myEntity2,getPhysics("sphere"),1);
+
+    rigidbody = world_.getComponent<RigidBody>(myEntity2);
+    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
+    rigidbody->velocity=Vector3D(-1,-1,0);
+
+}
+
+
 void Engine::Update(double dt)
 {
     //Physics
@@ -45,23 +73,7 @@ void Engine::Update(double dt)
 }
 
 
-void Engine::RunApp()
-{
-    std::cout << "RunApp()" << std::endl;
-    
-    auto myEntity = world_.newEntity("Entity");
 
-    loadMeshAsset("translated_cuboid_2x4x6.obj", "cuboid", 1.0);
-    
-    world_.addComponent<Transform>(myEntity,Vector3D(0,0,0));
-    world_.addComponent<Mesh>(myEntity,getMeshReference("cuboid"));
-    world_.addComponent<RigidBody>(myEntity,getPhysics("cuboid"),1);
-
-    
-    RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
-    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 0.1f);
-    
-}
 
 void Engine::KeyUp(int keyCode)
 {
