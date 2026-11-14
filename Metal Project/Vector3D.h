@@ -14,6 +14,8 @@
 		{}
 		Vector3D(float x, float y, float z) :x_(x), y_(y), z_(z)
 		{}
+        Vector3D(Vector3Dd v) :x_(v.x_), y_(v.y_), z_(v.z_)
+        {}
 
 
 		static float dot(const Vector3D& u, const Vector3D& v)

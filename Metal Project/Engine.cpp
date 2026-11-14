@@ -25,13 +25,16 @@ void Engine::RunApp()
     RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
     if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
     
-    world_.addComponent<Transform>(myEntity2,Vector3D(3,3,0));
+    world_.addComponent<Transform>(myEntity2,Vector3D(3,0.0,0));
     world_.addComponent<Mesh>(myEntity2,getMeshReference("sphere"));
     world_.addComponent<RigidBody>(myEntity2,getPhysics("sphere"),1);
 
     rigidbody = world_.getComponent<RigidBody>(myEntity2);
     if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
-    rigidbody->velocity=Vector3D(-1,-1,0);
+    rigidbody->angularMomentum=Vector3D(0,5,0);
+    
+    rigidbody->velocity=Vector3D(-1,0.2,0);
+    
 
 }
 

@@ -137,39 +137,75 @@ void PhysicsSystem::solveContacts(World &world, const std::vector<Contact>& cont
         auto rb1=contact.entity1.rigidbody;
         auto rb2=contact.entity2.rigidbody;
         
-        //velocity components parallel to normal. +ve = entity 2 -> entity 1
-        auto v1Parallel = Vector3D::dot(rb1->velocity,contact.worldNormal);
-        auto v2Parallel = Vector3D::dot(rb2->velocity,contact.worldNormal);
+        //normal impulse
         
-        //velocity components perpendicular to normal
-        auto v1Perp = rb1->velocity - (contact.worldNormal * v1Parallel);
-        auto v2Perp = rb2->velocity - (contact.worldNormal * v2Parallel);
+        float relativeNormalSpeed = Vector3D::dot((rb2->velocity - rb1->velocity),contact.worldNormal);
+        if(relativeNormalSpeed<=0.0f)continue; //objects are moving apart, so skip
+        
+        auto momentum0 = rb1->velocity * rb1->mass + rb2->velocity * rb2->mass;
+        auto angularMomentum0 = rb1->angularMomentum.magnitude() + rb2->angularMomentum.magnitude();
+    
+        float restitution = 0.5f * (rb1->elasticity + rb2->elasticity);
+        
+        auto Jn = contact.worldNormal * (Vector3D::dot((rb2->velocity - rb1->velocity),contact.worldNormal) * (restitution + 1))*(1/(rb1->invMass + rb2->invMass));
 
-        if(showDebug){
-            std::cout << "v1Parallel = " << v1Parallel << " v1Perp = " << v1Perp << std::endl;
-            std::cout << "v2Parallel = " << v2Parallel << " v2Perp = " << v2Perp <<  std::endl;
+        //tangential impulse
+        
+        auto r1 = contact.worldLocation - contact.entity1.transform->position_; //vector from centre of mass to contact point
+        auto r2 = contact.worldLocation - contact.entity2.transform->position_;
+        
+        auto vContact1 = Vector3Dd(rb1->velocity) + Vector3Dd::cross(rb1->angularVelocity,r1); //velocity at contact point
+        auto vContact2 = Vector3Dd(rb2->velocity) + Vector3Dd::cross(rb2->angularVelocity,r2);
+        
+        auto vRel = vContact2 - vContact1; //relative velocity at contact point
+        auto Vt = vRel - contact.worldNormal * Vector3Dd::dot(vRel,contact.worldNormal); //tangential component of relative velocity at contact point
+        auto t = Vt.getNormalized(); //direction of tangent
+        
+        auto r1Xt = Vector3Dd::cross(r1,t);
+        auto r2Xt = Vector3Dd::cross(r2,t);
+        
+        auto oneOverM = rb1->invMass + rb2->invMass + Vector3Dd::dot(r1Xt,rb1->inverseWorldInertia * r1Xt) + Vector3Dd::dot(r2Xt,rb2->inverseWorldInertia * r2Xt);
+        auto effectiveMass = 1 / oneOverM; //effective mass
+        
+        auto mu = 0.5f * (rb1->mu + rb2->mu); //average friction coefficient
+        
+        auto Jt =  Vt.getNormalized() * -std::min<double>(mu * Jn.magnitude(), effectiveMass * Vt.magnitude()); //tangential impulse
+        
+        Jn.print("Jn");
+        Jt.print("Jt");
+        
+        auto Jsum = Jn - Vector3D(Jt);  //combine normal and tangential impulse
+        
+        rb1->velocity = rb1->velocity + (Jsum * rb1->invMass); //update translational velocity
+        rb2->velocity = rb2->velocity - (Jsum * rb2->invMass);
+
+        
+        auto torque1 = Vector3D::cross(Jt,r1);
+        auto torque2 = Vector3D::cross(Jt,r2);
+        
+        rb1->angularMomentum = rb1->angularMomentum + torque1;
+        rb2->angularMomentum = rb2->angularMomentum - torque2;
+        
+        rb1->angularVelocity = rb1->angularMomentum * rb1->inverseWorldInertia;
+        rb2->angularVelocity = rb2->angularMomentum * rb2->inverseWorldInertia;
+
+        
+        rb1->velocity.print("NewV1");
+        rb2->velocity.print("NewV2");
+        
+        auto momentum1 = rb1->velocity * rb1->mass + rb2->velocity * rb2->mass;
+        auto angularMomentum1 = rb1->angularMomentum.magnitude() + rb2->angularMomentum.magnitude();
+
+        
+        if(showDebug ||true){
+            Jn.print("impulse3D");
+            momentum0.print("Momentum0");
+            std::cout << "Mag = " << momentum0.magnitude() << std::endl;
+            momentum1.print("Momentum1");
+            std::cout << "Mag = " << momentum1.magnitude() << std::endl;
+            std::cout << "AngularMomentum0 = " << angularMomentum0 << std::endl;
+            std::cout << "AngularMomentum1 = " << angularMomentum1 << std::endl;
         }
-        
-        auto preVParallel = v1Parallel + v2Parallel;
-        auto restitution = 0.5f * (rb1->elasticity + rb2->elasticity);
-        auto preMomentum = preVParallel * (rb1->mass + rb2->mass);
-  
-        auto impulse = ((restitution + 1) * (v2Parallel - v1Parallel))/(rb1->invMass + rb2->invMass);
-        
-        auto newV1Parallel = v1Parallel + (impulse/rb1->mass);
-        auto newV2Parallel = v2Parallel - (impulse/rb2->mass);
-
-        auto postMomentum = (newV1Parallel + newV2Parallel)* (rb1->mass + rb2->mass);
-
-        if(showDebug){
-            std::cout << "New v1Parallel = " << newV1Parallel << std::endl;
-            std::cout << "New v2Parallel = " << newV2Parallel << std::endl;
-            std::cout << "Pre-Momentum: " << preMomentum << " Post-Momentum: " << postMomentum << std::endl;
-        }
-        
-        rb1->velocity = contact.worldNormal * (float)newV1Parallel + v1Perp;
-        rb2->velocity = contact.worldNormal * (float)newV2Parallel + v2Perp;
-        
     }
 }
 
@@ -191,8 +227,8 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
 
     //iterate over pairs of candidates
     
-    for(std::size_t i = 0; i < candidates.size()-1; i++)
-        for(std::size_t j = i+1; j < candidates.size(); j++)
+    for(std::size_t i = 0; i + 1 < candidates.size(); i++)
+        for(std::size_t j = i + 1; j < candidates.size(); j++)
         {
             auto& candidate1 = candidates[i];
             auto& candidate2 = candidates[j];

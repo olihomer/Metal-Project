@@ -29,7 +29,7 @@ public:
 	Vector3D getRight();
 	Vector3D getForward();
 	
-	Camera(Vector3D position = Vector3D(1.5, 0, -3), Vector3D lookat = Vector3D(1.5, 0, 1), Vector3D up = Vector3D(0, 1, 0), float aspect_ratio = 1.0f, float near_plane = 0.1f, float far_plane = 100.0f, int fov = 90);
+	Camera(Vector3D position = Vector3D(1.0, 0, -3), Vector3D lookat = Vector3D(1.0, 0, 1), Vector3D up = Vector3D(0, 1, 0), float aspect_ratio = 1.0f, float near_plane = 0.1f, float far_plane = 100.0f, int fov = 90);
 
 private:
 	Matrix4x4 cameraLocalMatrix_;

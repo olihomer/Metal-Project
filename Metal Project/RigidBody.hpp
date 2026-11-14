@@ -41,7 +41,7 @@ public:
     Vector3Dd angularMomentum = Vector3Dd(0.0,0.0,0.0);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
-    float mu = 0.5f;
+    float mu = 1.0f;
     float elasticity = 0.6f;
     void setCollider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0){collider_=  Collider(type,r,x,y,z);}
     Collider collider_{ColliderType::None};

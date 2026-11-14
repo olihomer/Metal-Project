@@ -109,6 +109,19 @@ class Vector3D;
                 z_ /= mag;
             }
         }
+        
+        Vector3Dd getNormalized()
+        {
+            Vector3Dd norm;
+            float mag = magnitude();
+            if(mag!=0.0f)
+            {
+                norm.x_ = x_ / mag;
+                norm.y_ = y_ / mag;
+                norm.z_ = z_ / mag;
+            }
+            return norm;
+        }
 
         void print(std::string comment)
         {
