@@ -191,6 +191,42 @@ void PhysicsSystem::solveContacts(World &world, const std::vector<Contact>& cont
         
         auto Jt =  Vt.getNormalized() * -std::min<double>(mu * Jn.magnitude(), effectiveMass * Vt.magnitude()); //tangential impulse
         
+        //spinning friction
+        
+        auto relativeSpinSpeed = Vector3Dd::dot((rb2->angularVelocity - rb1->angularVelocity),contact.worldNormal);
+        auto effectiveInertia = Vector3Dd::dot(Vector3Dd(contact.worldNormal) * (rb1->inverseWorldInertia + rb2->inverseWorldInertia), Vector3Dd(contact.worldNormal));
+        auto Js = -relativeSpinSpeed/effectiveInertia;
+        
+        float muSpin = 0.8f;
+        float effectiveArea = 0.02f;
+        auto maxSpin = Jn.magnitude() * muSpin * effectiveArea;
+        
+        auto magJS = std::clamp<double>(Js,-maxSpin,maxSpin);
+        
+        auto spinImpulse = contact.worldNormal * magJS;
+        
+        //rolling friction
+        Vector3Dd rollingImpulse{};
+        
+        if(contact.isRolling)
+        {
+            //is a sphere-ground collision. rb2 = the sphere
+            auto rollingW = rb2->angularVelocity - contact.worldNormal * Vector3Dd::dot(rb2->angularVelocity,contact.worldNormal);
+            auto Jr = rb2->worldInertia * rollingW * -1;
+            auto rollingMag = Jr.magnitude();
+            std::cout << "ROLLING MAG " << rollingMag << std::endl;
+            float muRoll = 0.02f;
+            auto maxRollMag = Jn.magnitude() * muRoll;
+            std::cout << "MAX MAG " << maxRollMag << std::endl;
+            rollingMag = std::clamp<double>(rollingMag,-maxRollMag,maxRollMag);
+            std::cout << "clamped " << rollingMag << std::endl;
+            
+            rollingImpulse = Jr.getNormalized() * rollingMag;
+            rollingImpulse.print("Roll impulse");
+        }
+                
+        //combine impulses
+        
         Jn.print("Jn");
         Jt.print("Jt");
         
@@ -206,12 +242,12 @@ void PhysicsSystem::solveContacts(World &world, const std::vector<Contact>& cont
         auto torque1 = Vector3D::cross(Jt,r1); //calculate torques from tangential impulse and radius
         auto torque2 = Vector3D::cross(Jt,r2);
         
-        rb1->angularMomentum = rb1->angularMomentum + torque1; //apply torques to angular momentum
-        rb2->angularMomentum = rb2->angularMomentum - torque2;
+        rb1->angularMomentum = rb1->angularMomentum + torque1 - spinImpulse - rollingImpulse; //apply torques to angular momentum
+        rb2->angularMomentum = rb2->angularMomentum - torque2 + spinImpulse + rollingImpulse;
         
         rb1->angularVelocity = rb1->angularMomentum * rb1->inverseWorldInertia; //apply angular momentum to angular velocity
         rb2->angularVelocity = rb2->angularMomentum * rb2->inverseWorldInertia;
-
+        
         rb1->velocity.print("NewV1");
         rb2->velocity.print("NewV2");
  
@@ -327,6 +363,7 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
                     contact.penetrationDepth = -separation;
                     contact.worldNormal = Vector3D(0,-1,0);
                     contact.worldLocation = Vector3D(sphere.transform->position_.x_,ground.transform->position_.y_,sphere.transform->position_.z_);
+                    contact.isRolling = true;
                     contacts.push_back(contact);
                     ground.rigidbody->invMass = 0;
                     ground.rigidbody->inverseBodyInertia = Matrix3x3d() * 0;

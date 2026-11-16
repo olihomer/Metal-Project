@@ -28,6 +28,7 @@ struct Contact
     Vector3D worldLocation;
     Vector3D worldNormal;
     double penetrationDepth;
+    bool isRolling = false;
 };
 
 struct ForceAccumulator

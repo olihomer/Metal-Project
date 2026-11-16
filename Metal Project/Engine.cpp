@@ -28,7 +28,7 @@ void Engine::RunApp()
         RigidBody* rigidbody = world_.getComponent<RigidBody>(entities[i]);
         if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
 
-        rigidbody->angularMomentum=Vector3D(-3+rand()%6,0,-3+rand()%6);
+        rigidbody->angularMomentum=Vector3D(-3+rand()%6,-3+rand()%6,-3+rand()%6);
         
         if(i>3)rigidbody->velocity = Vector3D(0,0,0);
     }
