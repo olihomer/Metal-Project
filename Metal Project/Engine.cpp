@@ -15,26 +15,31 @@ void Engine::RunApp()
     
     loadMeshAsset("sphere.obj", "sphere", 1.0);
 
-    auto myEntity = world_.newEntity("Entity");
-    auto myEntity2 = world_.newEntity("Entity2");
-
-    world_.addComponent<Transform>(myEntity,Vector3D(0,0,0));
-    world_.addComponent<Mesh>(myEntity,getMeshReference("sphere"));
-    world_.addComponent<RigidBody>(myEntity,getPhysics("sphere"),1);
-
-    RigidBody* rigidbody = world_.getComponent<RigidBody>(myEntity);
-    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
+    std::vector<ECS::Handle<ECS::Entity>> entities;
+    entities.resize(50);
     
-    world_.addComponent<Transform>(myEntity2,Vector3D(3,0.0,0));
-    world_.addComponent<Mesh>(myEntity2,getMeshReference("sphere"));
-    world_.addComponent<RigidBody>(myEntity2,getPhysics("sphere"),1);
+    for(int i = 0; i < 10; i++)
+    {
+        entities[i] = world_.newEntity("Entity");
+        world_.addComponent<Transform>(entities[i],Vector3D(rand()%10,2+rand()%5,rand()%5));
+        world_.addComponent<Mesh>(entities[i],getMeshReference("sphere"));
+        world_.addComponent<RigidBody>(entities[i],getPhysics("sphere"),1);
 
-    rigidbody = world_.getComponent<RigidBody>(myEntity2);
-    if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
-    rigidbody->angularMomentum=Vector3D(0,5,0);
+        RigidBody* rigidbody = world_.getComponent<RigidBody>(entities[i]);
+        if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
+
+        rigidbody->angularMomentum=Vector3D(-3+rand()%6,0,-3+rand()%6);
+        
+        if(i>3)rigidbody->velocity = Vector3D(0,0,0);
+    }
     
-    rigidbody->velocity=Vector3D(-1,0.2,0);
-    
+    auto groundPlane = world_.newEntity("Ground");
+    world_.addComponent<Transform>(groundPlane, Vector3D(0,0,0));
+    world_.addComponent<RigidBody>(groundPlane);
+    auto* groundRB = world_.getComponent<RigidBody>(groundPlane);
+
+    groundRB->setCollider(ColliderType::GroundPlane);
+
 
 }
 

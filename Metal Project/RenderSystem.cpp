@@ -28,6 +28,8 @@ RenderSystem::RenderSystem(MTL::Device* device)
     commandQueue_ = NS::TransferPtr(device_->newCommandQueue());
     defaultLibrary_ = NS::TransferPtr(device_->newDefaultLibrary());
     
+    //main pipeline
+    
     auto* functionName = NS::String::string("vertexMain",NS::UTF8StringEncoding);
     auto* vertexFunction = defaultLibrary_->newFunction(functionName);
 
@@ -45,7 +47,28 @@ RenderSystem::RenderSystem(MTL::Device* device)
     if(error)
     {
         std::cout << error->code() << std::endl;
-        throw std::runtime_error("couldn't create pipeline");
+        throw std::runtime_error("couldn't create main pipeline");
+    }
+    
+    //grid pipeline
+
+    functionName = NS::String::string("gridVertex",NS::UTF8StringEncoding);
+    vertexFunction = defaultLibrary_->newFunction(functionName);
+
+    functionName = NS::String::string("gridFragment",NS::UTF8StringEncoding);
+    fragmentFunction = defaultLibrary_->newFunction(functionName);
+    
+    pipelineDesc = MTL::RenderPipelineDescriptor::alloc()->init();
+    pipelineDesc->setFragmentFunction(fragmentFunction);
+    pipelineDesc->setVertexFunction(vertexFunction);
+    pipelineDesc->colorAttachments()->object(0)->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+    pipelineDesc->setDepthAttachmentPixelFormat(MTL::PixelFormatDepth32Float);
+
+    gridPipelineState_ = NS::TransferPtr(device_->newRenderPipelineState(pipelineDesc,&error));
+    if(error)
+    {
+        std::cout << error->code() << std::endl;
+        throw std::runtime_error("couldn't create grid pipeline");
     }
     
     auto* depthDesc = MTL::DepthStencilDescriptor::alloc()->init();
@@ -101,9 +124,16 @@ void RenderSystem::RenderFrame(void* passPtr, void* drawablePtr, World& world)
         auto size = gpuMeshes_[mesh.gpuMeshIndex_].size_;
         commandEncoder->setVertexBuffer(vertexBuffer, 0, VERTEXBUFFER);
         commandEncoder->drawIndexedPrimitives(MTL::PrimitiveTypeTriangle, size, MTL::IndexTypeUInt32, indexBuffer, 0);
-    }
-        
-    );
+    });
+                                
+    //draw grid
+    
+    constexpr int N = 100;
+    constexpr int vertexCount = 4 * (2 * N + 1);
+    commandEncoder->setRenderPipelineState(gridPipelineState_.get());
+    commandEncoder->drawPrimitives(MTL::PrimitiveTypeLine, NS::UInteger(0), NS::UInteger(vertexCount));
+    
+    
     
     commandEncoder->endEncoding();
     commandBuffer->presentDrawable(drawable);

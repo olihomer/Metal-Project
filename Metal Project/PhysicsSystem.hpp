@@ -10,8 +10,8 @@
 
 #include "World.hpp"
 
-constexpr float touchingDistance = 0.01f;
-constexpr float collisionThreshold = 0.01f;
+constexpr float touchingDistance = 0.0001f;
+constexpr float collisionThreshold = 0.0001f;
 
 
 struct CollisionCandidate
@@ -32,8 +32,8 @@ struct Contact
 
 struct ForceAccumulator
 {
-    Vector3D netForce;
-    Vector3Dd netTorque;
+    Vector3D netForce{};
+    Vector3Dd netTorque{};
 };
 
 class PhysicsSystem
@@ -59,7 +59,7 @@ private:
     void integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt);
     std::vector<Contact> detectCollisions(World& world);
     void solveContacts(World& world, const std::vector<Contact>& contacts, double dt);
-    void correctPenetrations(World& world);
+    void correctPenetrations(World& world, const std::vector<Contact>& contacts);
     
     void applyDamping(RigidBody& rigidbody) const;
 };

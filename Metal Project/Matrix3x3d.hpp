@@ -173,8 +173,23 @@ public:
     {
         double det = getDeterminant();
         
-        if(abs(det)<0.0000001)throw std::runtime_error("Determinant close to zero, cannot invert matrix");
-        
+        using T = double;
+
+        T scale = 0;
+
+        for (const auto& row : mat_)
+            for (T value : row)
+                scale = std::max(scale, std::abs(value));
+
+        T tolerance = std::numeric_limits<T>::epsilon()
+                      * scale * scale * scale * 10;
+
+        if (!std::isfinite(det) ||
+            scale == 0 ||
+            std::abs(det) <= tolerance)
+        {
+            throw std::runtime_error("Matrix is singular or numerically singular");
+        }
         Matrix3x3d cof;
         cof.mat_[0][0] =  (mat_[1][1] * mat_[2][2])-(mat_[1][2] * mat_[2][1]);
         cof.mat_[0][1] = -((mat_[1][0] * mat_[2][2])-(mat_[1][2] * mat_[2][0]));

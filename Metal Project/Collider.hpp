@@ -8,7 +8,7 @@
 #ifndef Collider_hpp
 #define Collider_hpp
 
-enum class ColliderType{None, Sphere, Cube, Cuboid, Capsule};
+enum class ColliderType{None, Sphere, Cube, Cuboid, Capsule, GroundPlane};
 
 class Collider
 {

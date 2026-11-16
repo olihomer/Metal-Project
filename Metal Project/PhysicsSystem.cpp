@@ -16,13 +16,14 @@ void PhysicsSystem::updatePhysics(World& world, double dt)
     
     integrateVelocities(world, dt);
     
+    integratePositions(world, dt);
+
     auto contacts = detectCollisions(world);
     
     solveContacts(world, contacts, dt);
     
-    integratePositions(world, dt);
-    
-    correctPenetrations(world);
+    correctPenetrations(world, contacts);
+
 }
 
 
@@ -42,6 +43,7 @@ void PhysicsSystem::integratePositions(World& world, double dt)
 
 void PhysicsSystem::integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt)
 {
+    if(rigidbody.collider_.type_==ColliderType::GroundPlane)return;
 
     transform.position_ = transform.position_ + rigidbody.velocity * dt;
 
@@ -75,10 +77,10 @@ void PhysicsSystem::integrateEntityPositions(Transform& transform, RigidBody& ri
 
 void PhysicsSystem::integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt)
 {
+    if(rigidbody.collider_.type_==ColliderType::GroundPlane)return;
     //accumulate and apply forces
     ForceAccumulator forces = accumulateForces(transform, rigidbody, dt);
-    forces.netForce=Vector3D();
-    forces.netTorque=Vector3D();
+    
     Vector3D acceleration = forces.netForce * (1.0f/rigidbody.mass);
         
     //linear velocity
@@ -90,12 +92,16 @@ void PhysicsSystem::integrateEntityVelocities(Transform& transform, RigidBody& r
     rigidbody.angularMomentum += forces.netTorque * dt;
     rigidbody.angularVelocity = rigidbody.angularMomentum * rigidbody.inverseWorldInertia;
     
+    applyDamping(rigidbody);
+    
 }
 
 
 ForceAccumulator PhysicsSystem::accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const
 {
     ForceAccumulator forces;
+    if(rigidbody.collider_.type_==ColliderType::GroundPlane)return forces;
+
     //gravity
     Vector3D gravityForce{};
     gravityForce = Vector3D(0,- gravity * rigidbody.mass,0);
@@ -114,7 +120,6 @@ ForceAccumulator PhysicsSystem::accumulateForces(const Transform& transform, Rig
     }
     
     forces.netForce = gravityForce + dragForce;
-    forces.netTorque = Vector3Dd(0,0,0);
 
     return forces;
 }
@@ -142,8 +147,23 @@ void PhysicsSystem::solveContacts(World &world, const std::vector<Contact>& cont
         float relativeNormalSpeed = Vector3D::dot((rb2->velocity - rb1->velocity),contact.worldNormal);
         if(relativeNormalSpeed<=0.0f)continue; //objects are moving apart, so skip
         
+        rb1->velocity.print("rb1 v0");
+        rb2->velocity.print("rb2 v0");
+        
+        auto totalL0 =
+            Vector3Dd::cross(
+                Vector3Dd(contact.entity1.transform->position_),
+                Vector3Dd(rb1->velocity) * rb1->mass
+            )
+            + rb1->angularMomentum
+            + Vector3Dd::cross(
+                Vector3Dd(contact.entity2.transform->position_),
+                Vector3Dd(rb2->velocity) * rb2->mass
+            )
+            + rb2->angularMomentum;
+        
         auto momentum0 = rb1->velocity * rb1->mass + rb2->velocity * rb2->mass;
-        auto angularMomentum0 = rb1->angularMomentum.magnitude() + rb2->angularMomentum.magnitude();
+        auto energy0 = pow(rb1->velocity.magnitude(),2) * 0.5 * rb1->mass + pow(rb2->velocity.magnitude(),2) * 0.5 * rb2->mass + Vector3Dd::dot(rb1->angularMomentum,rb1->angularVelocity) * 0.5 + Vector3Dd::dot(rb2->angularMomentum,rb2->angularVelocity) * 0.5;
     
         float restitution = 0.5f * (rb1->elasticity + rb2->elasticity);
         
@@ -179,40 +199,71 @@ void PhysicsSystem::solveContacts(World &world, const std::vector<Contact>& cont
         rb1->velocity = rb1->velocity + (Jsum * rb1->invMass); //update translational velocity
         rb2->velocity = rb2->velocity - (Jsum * rb2->invMass);
 
+        std::cout << "Tangential speed: " << Vt.magnitude() << '\n';
+        std::cout << "Tangential effective mass: " << effectiveMass << '\n';
+        std::cout << "Friction impulse magnitude: " << Jt.magnitude() << '\n';
         
-        auto torque1 = Vector3D::cross(Jt,r1);
+        auto torque1 = Vector3D::cross(Jt,r1); //calculate torques from tangential impulse and radius
         auto torque2 = Vector3D::cross(Jt,r2);
         
-        rb1->angularMomentum = rb1->angularMomentum + torque1;
+        rb1->angularMomentum = rb1->angularMomentum + torque1; //apply torques to angular momentum
         rb2->angularMomentum = rb2->angularMomentum - torque2;
         
-        rb1->angularVelocity = rb1->angularMomentum * rb1->inverseWorldInertia;
+        rb1->angularVelocity = rb1->angularMomentum * rb1->inverseWorldInertia; //apply angular momentum to angular velocity
         rb2->angularVelocity = rb2->angularMomentum * rb2->inverseWorldInertia;
 
-        
         rb1->velocity.print("NewV1");
         rb2->velocity.print("NewV2");
-        
+ 
         auto momentum1 = rb1->velocity * rb1->mass + rb2->velocity * rb2->mass;
-        auto angularMomentum1 = rb1->angularMomentum.magnitude() + rb2->angularMomentum.magnitude();
-
+        auto energy1 = pow(rb1->velocity.magnitude(),2) * 0.5 * rb1->mass + pow(rb2->velocity.magnitude(),2) * 0.5 * rb2->mass + Vector3Dd::dot(rb1->angularMomentum,rb1->angularVelocity) * 0.5 + Vector3Dd::dot(rb2->angularMomentum,rb2->angularVelocity) * 0.5;
+        
+        auto totalL1 =
+            Vector3Dd::cross(
+                Vector3Dd(contact.entity1.transform->position_),
+                Vector3Dd(rb1->velocity) * rb1->mass
+            )
+            + rb1->angularMomentum
+            + Vector3Dd::cross(
+                Vector3Dd(contact.entity2.transform->position_),
+                Vector3Dd(rb2->velocity) * rb2->mass
+            )
+            + rb2->angularMomentum;
         
         if(showDebug ||true){
-            Jn.print("impulse3D");
+            totalL0.print("Angular Momentum0");
+            std::cout << "Mag = " << totalL0.magnitude() << std::endl;
+            totalL1.print("Angular Momentum1");
+            std::cout << "Mag = " << totalL1.magnitude() << std::endl;
             momentum0.print("Momentum0");
             std::cout << "Mag = " << momentum0.magnitude() << std::endl;
             momentum1.print("Momentum1");
             std::cout << "Mag = " << momentum1.magnitude() << std::endl;
-            std::cout << "AngularMomentum0 = " << angularMomentum0 << std::endl;
-            std::cout << "AngularMomentum1 = " << angularMomentum1 << std::endl;
+            std::cout << "Energy0 = " << energy0 << std::endl;
+            std::cout << "Energy1 = " << energy1 << std::endl;
         }
     }
 }
 
-void PhysicsSystem::correctPenetrations(World &world)
+void PhysicsSystem::correctPenetrations(World &world, const std::vector<Contact>& contacts)
 {
-    //TODO
+    //iterate through contacts
+    for(auto contact: contacts)
+    {
+        std::cout << "Penetration: " << contact.penetrationDepth << std::endl;
+        auto* rb1 = contact.entity1.rigidbody;
+        auto* rb2 = contact.entity2.rigidbody;
+        auto* trans1 = contact.entity1.transform;
+        auto* trans2 = contact.entity2.transform;
+        
+        auto correctionVector1 = (contact.worldNormal * contact.penetrationDepth) * ((rb1->invMass)/(rb1->invMass+rb2->invMass));
+        auto correctionVector2 = (contact.worldNormal * -contact.penetrationDepth) * ((rb2->invMass)/(rb1->invMass+rb2->invMass));
+
+        trans1->position_ = trans1->position_ + correctionVector1;
+        trans2->position_ = trans2->position_ + correctionVector2;
+    }
 }
+
 
 std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
 {
@@ -232,9 +283,12 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
         {
             auto& candidate1 = candidates[i];
             auto& candidate2 = candidates[j];
+            auto type1 = candidate1.rigidbody->collider_.type_;
+            auto type2 = candidate2.rigidbody->collider_.type_;
+            
             
             //sphere to sphere
-            if(candidate1.rigidbody->collider_.type_ == ColliderType::Sphere && candidate2.rigidbody->collider_.type_ == ColliderType::Sphere)
+            if(type1 == ColliderType::Sphere && type2 == ColliderType::Sphere)
             {
                 //check if colliding
                 auto separationVector = candidate1.transform->position_ - candidate2.transform->position_;
@@ -251,11 +305,38 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
                     contact.worldLocation = candidate2.transform->position_ + (contact.worldNormal * candidate2.rigidbody->collider_.r_);
                     contacts.push_back(contact);
                     if(showDebug){
-                        contact.worldLocation.print("Collision at world location: ");
+                        contact.worldLocation.print("Sphere-Sphere collision at world location: ");
                         std::cout << "Entities = " << i << " and " << j << std::endl;
                     }
                 }
            
+            }
+            else if((type1 == ColliderType::Sphere && type2 == ColliderType::GroundPlane) || (type1 == ColliderType::GroundPlane && type2 == ColliderType::Sphere))
+            {
+                CollisionCandidate& ground = (type1 == ColliderType::Sphere) ? candidate2 : candidate1;
+                CollisionCandidate& sphere = (type2 == ColliderType::Sphere) ? candidate2 : candidate1;
+
+                auto separation = (sphere.transform->position_.y_ - sphere.rigidbody->collider_.r_) - ground.transform->position_.y_;
+
+                if(separation<0)
+                {
+                    //populate contact struct
+                    Contact contact;
+                    contact.entity1 = ground;
+                    contact.entity2 = sphere;
+                    contact.penetrationDepth = -separation;
+                    contact.worldNormal = Vector3D(0,-1,0);
+                    contact.worldLocation = Vector3D(sphere.transform->position_.x_,ground.transform->position_.y_,sphere.transform->position_.z_);
+                    contacts.push_back(contact);
+                    ground.rigidbody->invMass = 0;
+                    ground.rigidbody->inverseBodyInertia = Matrix3x3d() * 0;
+                    ground.rigidbody->inverseWorldInertia = Matrix3x3d() * 0;
+                    if(showDebug){
+                        contact.worldLocation.print("Sphere-ground collision at world location: ");
+                        std::cout << "Entities = " << i << " and " << j << std::endl;
+                    }
+                }
+
             }
             else
             {

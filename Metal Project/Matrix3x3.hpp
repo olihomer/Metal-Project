@@ -162,6 +162,25 @@ public:
     Matrix3x3 invert()
     {
         float det = getDeterminant();
+        
+        using T = float;
+
+        T scale = 0;
+
+        for (const auto& row : mat_)
+            for (T value : row)
+                scale = std::max(scale, std::abs(value));
+
+        T tolerance = std::numeric_limits<T>::epsilon()
+                      * scale * scale * scale * 10;
+
+        if (!std::isfinite(det) ||
+            scale == 0 ||
+            std::abs(det) <= tolerance)
+        {
+            throw std::runtime_error("Matrix is singular or numerically singular");
+        }
+        
         Matrix3x3 cof;
         cof.mat_[0][0] =  (mat_[1][1] * mat_[2][2])-(mat_[1][2] * mat_[2][1]);
         cof.mat_[0][1] = -((mat_[1][0] * mat_[2][2])-(mat_[1][2] * mat_[2][0]));
