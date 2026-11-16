@@ -18,7 +18,7 @@ void Engine::RunApp()
     std::vector<ECS::Handle<ECS::Entity>> entities;
     entities.resize(50);
     
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 50; i++)
     {
         entities[i] = world_.newEntity("Entity");
         world_.addComponent<Transform>(entities[i],Vector3D(rand()%10,2+rand()%5,rand()%5));
