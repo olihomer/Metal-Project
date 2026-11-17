@@ -73,10 +73,9 @@ private:
     void integratePositions(World& world, double dt);
     void integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt);
     void integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt);
-    void detectCollisions(World& world);
-    void solveContacts(World& world, double dt);
-    void solveContactsIterator(World& world, double dt, int iterations);
-    void correctPenetrations(World& world);
+    std::vector<Contact> detectCollisions(World& world);
+    void solveContactsIterator(World& world, std::vector<Contact>& contacts, double dt, int iterations);
+    void correctPenetrations(World& world, std::vector<Contact>& contacts) const;
     
     void applyDamping(RigidBody& rigidbody) const;
 
