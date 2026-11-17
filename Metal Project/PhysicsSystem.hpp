@@ -25,21 +25,22 @@ struct CollisionCandidate
 
 struct ImpulseAccumulator
 {
-    double normalLinear;
-    Vector3Dd tangentialLinear;
-    double spinAngular;
-    Vector3Dd rollAngular;
+    double normalLinear{};
+    Vector3Dd tangentialLinear{};
+    double spinAngular{};
+    Vector3Dd rollAngular{};
 };
 
 struct Contact
 {
-    CollisionCandidate entity1;
-    CollisionCandidate entity2;
-    Vector3D worldLocation;
-    Vector3D worldNormal;
-    ImpulseAccumulator impulseAccumulator;
-    double penetrationDepth;
+    CollisionCandidate entity1{};
+    CollisionCandidate entity2{};
+    Vector3D worldLocation{};
+    Vector3D worldNormal{};
+    ImpulseAccumulator impulseAccumulator{};
+    double penetrationDepth{};
     bool isRolling = false;
+    double targetNormalVelocity{};
     
 };
 

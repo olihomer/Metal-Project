@@ -18,17 +18,17 @@ void Engine::RunApp()
     std::vector<ECS::Handle<ECS::Entity>> entities;
     entities.resize(50);
     
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 2; i++)
     {
         entities[i] = world_.newEntity("Entity");
-        world_.addComponent<Transform>(entities[i],Vector3D(0,i*2+1,0));
+        world_.addComponent<Transform>(entities[i],Vector3D(0,i*3+1,0));
         world_.addComponent<Mesh>(entities[i],getMeshReference("sphere"));
         world_.addComponent<RigidBody>(entities[i],getPhysics("sphere"),1);
 
         RigidBody* rigidbody = world_.getComponent<RigidBody>(entities[i]);
         if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
 
-        if(i==2)rigidbody->angularMomentum=Vector3D(0,0,5);
+        //if(i==2)rigidbody->angularMomentum=Vector3D(0,0,5);
         
     }
     

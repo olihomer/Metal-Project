@@ -17,12 +17,12 @@ void PhysicsSystem::updatePhysics(World& world, double dt)
     integrateVelocities(world, dt);
 
     detectCollisions(world);
-    
-    //solveContacts(world, dt);
-    
+        
     if(contacts_.size()>0)solveContactsIterator(world, dt, 10);
     
     integratePositions(world, dt);
+    
+    detectCollisions(world);
     
     correctPenetrations(world);
 
@@ -284,7 +284,7 @@ void PhysicsSystem::solveContacts(World &world, double dt)
 void PhysicsSystem::correctPenetrations(World &world)
 {
     //iterate through contacts
-    for(auto contact: contacts_)
+    for(auto& contact: contacts_)
     {
         if(showDebug) std::cout << "Penetration: " << contact.penetrationDepth << std::endl;
         auto* rb1 = contact.entity1.rigidbody;
@@ -341,8 +341,14 @@ void PhysicsSystem::detectCollisions(World& world)
                     Contact contact;
                     contact.entity1 = candidate1;
                     contact.entity2 = candidate2;
-                    contact.penetrationDepth = sumColliders - separationVector.magnitude();
+                    contact.penetrationDepth = std::max(0.0f,sumColliders - separationVector.magnitude());
                     contact.worldNormal = separationVector.getNormalized();
+                    
+                    //store the target normal separation velocity
+                    double vn = Vector3D::dot(candidate2.rigidbody->velocity-candidate1.rigidbody->velocity,contact.worldNormal);
+                    double e = (0.5 * candidate1.rigidbody->elasticity + candidate2.rigidbody->elasticity);
+                    contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
+
                     contact.worldLocation = candidate2.transform->position_ + (contact.worldNormal * candidate2.rigidbody->collider_.r_);
                     contacts_.push_back(contact);
                     if(showDebug){
@@ -369,6 +375,12 @@ void PhysicsSystem::detectCollisions(World& world)
                     contact.entity2 = sphere;
                     contact.penetrationDepth = std::max(-separation,0.0f); //penetration depth is a positive number (or zero for no penetration)
                     contact.worldNormal = Vector3D(0,-1,0);
+                    
+                    //store the target normal separation velocity
+                    double vn = Vector3D::dot(sphere.rigidbody->velocity,contact.worldNormal);
+                    double e = (0.5 * sphere.rigidbody->elasticity + ground.rigidbody->elasticity);
+                    contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
+
                     contact.worldLocation = Vector3D(sphere.transform->position_.x_,ground.transform->position_.y_,sphere.transform->position_.z_);
                     contact.isRolling = true;
                     contacts_.push_back(contact);
@@ -399,8 +411,9 @@ void PhysicsSystem::solveContactsIterator(World &world, double dt, int iteration
     for(int i = 0; i < iterations; i++)
     {
         std::cout << "Iteration " << i << " of " << iterations << ". Number of contacts = " << contacts_.size() << std::endl;
+        
         //iterate through contacts
-        for(auto contact: contacts_)
+        for(auto& contact: contacts_)
         {
             auto rb1=contact.entity1.rigidbody;
             auto rb2=contact.entity2.rigidbody;
@@ -429,10 +442,8 @@ void PhysicsSystem::solveContactsIterator(World &world, double dt, int iteration
                 momentum0 = rb1->velocity * rb1->mass + rb2->velocity * rb2->mass;
                 energy0 = pow(rb1->velocity.magnitude(),2) * 0.5 * rb1->mass + pow(rb2->velocity.magnitude(),2) * 0.5 * rb2->mass + Vector3Dd::dot(rb1->angularMomentum,rb1->angularVelocity) * 0.5 + Vector3Dd::dot(rb2->angularMomentum,rb2->angularVelocity) * 0.5;
             }
-            
-            float restitution = 0.5f * (rb1->elasticity + rb2->elasticity) * (relativeNormalSpeed < bounceThreshold ? 0.0f : 1.0f);
-            
-            auto Jn = contact.worldNormal * (Vector3D::dot((rb2->velocity - rb1->velocity),contact.worldNormal) * (restitution + 1))*(1/(rb1->invMass + rb2->invMass)); //normal impulse
+                        
+            auto Jn = contact.worldNormal * ((relativeNormalSpeed - contact.targetNormalVelocity) / (rb1->invMass + rb2->invMass)); //normal impulse
             
             contact.impulseAccumulator.normalLinear += Jn.magnitude()/contact.worldNormal.magnitude();
             std::cout << "Jn mag = " << Jn.magnitude()/contact.worldNormal.magnitude() << std::endl;
