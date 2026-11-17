@@ -9,9 +9,11 @@
 #define PhysicsSystem_hpp
 
 #include "World.hpp"
+#include <vector>
 
 constexpr float touchingDistance = 0.0001f;
-constexpr float collisionThreshold = 0.0001f;
+constexpr float collisionThreshold = 0.01f;
+constexpr float bounceThreshold = 0.5f;
 
 
 struct CollisionCandidate
@@ -21,14 +23,24 @@ struct CollisionCandidate
     Transform* transform;
 };
 
+struct ImpulseAccumulator
+{
+    double normalLinear;
+    Vector3Dd tangentialLinear;
+    double spinAngular;
+    Vector3Dd rollAngular;
+};
+
 struct Contact
 {
     CollisionCandidate entity1;
     CollisionCandidate entity2;
     Vector3D worldLocation;
     Vector3D worldNormal;
+    ImpulseAccumulator impulseAccumulator;
     double penetrationDepth;
     bool isRolling = false;
+    
 };
 
 struct ForceAccumulator
@@ -51,6 +63,8 @@ private:
     static constexpr float minVelocity = 0.005f;
     static constexpr float stickingThreshold = 0.05f;
     static constexpr float zeroRestitutionThreshold = 0.005f;
+    
+    std::vector<Contact> contacts_;
         
     void resolveCollisions(Transform& transform, RigidBody& rigidbody) const;
     ForceAccumulator accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const;
@@ -58,11 +72,13 @@ private:
     void integratePositions(World& world, double dt);
     void integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt);
     void integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt);
-    std::vector<Contact> detectCollisions(World& world);
-    void solveContacts(World& world, const std::vector<Contact>& contacts, double dt);
-    void correctPenetrations(World& world, const std::vector<Contact>& contacts);
+    void detectCollisions(World& world);
+    void solveContacts(World& world, double dt);
+    void solveContactsIterator(World& world, double dt, int iterations);
+    void correctPenetrations(World& world);
     
     void applyDamping(RigidBody& rigidbody) const;
+
 };
 
 

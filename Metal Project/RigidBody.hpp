@@ -41,7 +41,7 @@ public:
     Vector3Dd angularMomentum = Vector3Dd(0.0,0.0,0.0);
     float dragCoefficient = 0.5f;
     float crossSectionArea = 0.1f;
-    float mu = 1.0f;
+    float mu = 0.8f;
     float muSpin = 0.8f;
     float muRoll = 0.02f;
     float elasticity = 0.6f;

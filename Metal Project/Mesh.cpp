@@ -214,6 +214,8 @@ void MeshAsset::ComputeInertia()
     physics_.inverseBodyInertia_ = I.invert();
     physics_.massAtUnitDensity_ = mass;
     
+    std::cout << "Mesh mass at unit density = " << mass << std::endl;
+    
     physics_.inverseBodyInertia_.print("Inverse tensor around COG");
     
     //translate COG to origin
