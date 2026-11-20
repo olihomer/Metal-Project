@@ -485,24 +485,7 @@ bool Cuboid::hasOverlappingFaces(Cuboid& cuboid2)
     if(maxCuboid2.z_ < minCuboid1.z_ || minCuboid2.z_ > maxCuboid1.z_){std::cout << "Z-Axis Clearance\n";axisOverlap=false;}
     
     if(axisOverlap == false)return false; // return with an easy false
-        
-    //Return relevant faces
-        
-    faceRelevant[0] = (minCuboid1.x_ > minCuboid2.x_); //face left
-    faceRelevant[1] = (maxCuboid1.x_ < maxCuboid2.x_); //face right
-    
-    faceRelevant[2] = (minCuboid1.y_ > minCuboid2.y_); //face bottom
-    faceRelevant[3] = (maxCuboid1.y_ < maxCuboid2.y_); //face top
-    
-    faceRelevant[4] = (minCuboid1.z_ > minCuboid2.z_); //face backward
-    faceRelevant[5] = (maxCuboid1.z_ < maxCuboid2.z_); //face forward
-    
-    std::cout<<"Relevant faces:" << std::endl;
-    for(int i=0;i<6;i++)
-    {
-        if(faceRelevant[i]){std::cout<<faceNames[i]<<std::endl;}
-    }
-    
+
     return true;
 }
 
@@ -538,7 +521,7 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             auto vector2 = edge2 * R2inR1;
             
             auto normal = Vector3D::cross(vector1, vector2);
-            if(normal.magnitude()<0.0001f)break; //skip nearly parallel edges
+            if(normal.magnitude()<0.0001f)continue; //skip nearly parallel edges
             normal.normalize();
             normal.print("normal");
             
@@ -547,10 +530,12 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
             cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
             
-            auto r2 = (cuboid2.halfEdge * R2inR1).x_ * abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
-            (cuboid2.halfEdge * R2inR1).y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
-            (cuboid2.halfEdge * R2inR1).z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
+            auto rotatedHalfLengths = cuboid2.halfEdge * R2inR1.abs();
             
+            auto r2 =    rotatedHalfLengths.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
+            rotatedHalfLengths.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
+            rotatedHalfLengths.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
+
             //calculate intervals along the normal
             
             auto iMin1 = -r1;

@@ -34,7 +34,7 @@ void Engine::RunApp()
         rigidbody->velocity = Vector3D(0,0,0);*/
     }
     world_.addComponent<Transform>(entities[0],Vector3D(0,0,0));
-    world_.addComponent<Transform>(entities[1],Vector3D(3.1,2,3));
+    world_.addComponent<Transform>(entities[1],Vector3D(3.5,2,3));
 
     
     auto* trans1 = world_.getComponent<Transform>(entities[0]);
