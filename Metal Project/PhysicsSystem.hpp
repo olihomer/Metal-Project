@@ -14,7 +14,7 @@
 constexpr float touchingDistance = 0.0001f;
 constexpr float collisionThreshold = 0.01f;
 constexpr float bounceThreshold = 0.5f;
-
+constexpr std::string_view faceNames[6] = {"Left","Right","Bottom","Top","Backwards","Forwards"};
 
 struct CollisionCandidate
 {
@@ -48,6 +48,26 @@ struct ForceAccumulator
 {
     Vector3D netForce{};
     Vector3Dd netTorque{};
+};
+
+struct Plane
+{
+    Plane(Vector3D p, Vector3D n){point = p; normal = n.getNormalized();}
+    Vector3D point{};
+    Vector3D normal{};
+    bool pointIsAbove(Vector3D x){return(Vector3D::dot(x-point,normal)>0);}
+    bool pointIsBelow(Vector3D x){return(Vector3D::dot(x-point,normal)<0);}
+    bool pointOnPlane(Vector3D x){return(Vector3D::dot(x-point,normal)==0);}
+};
+
+struct Cuboid
+{
+    Cuboid(Vector3D point_, Vector3D halfEdge_, Quaternion rotation_):p(point_),halfEdge(halfEdge_),rotation(rotation_){}
+    Vector3D p{};
+    Vector3D halfEdge{};
+    Quaternion rotation{};
+    std::array<bool,6> getOverlappingFaces(Cuboid& cuboid2);
+    bool isColliding(Cuboid& cuboid2);
 };
 
 class PhysicsSystem

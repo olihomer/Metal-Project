@@ -14,6 +14,19 @@ class Matrix4x4{
 public:
 	float mat_[4][4] = {};
 
+    void print(std::string comment)
+    {
+        std::cout << comment << ":" << std::endl;
+        for(int r = 0; r < 4; r++)
+        {
+            for(int c = 0; c< 4; c++)
+            {
+                std::cout << mat_[r][c] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    
 	void setIdentity()
 	{
 		::memset(mat_, 0, sizeof(float) * 16);
@@ -79,6 +92,19 @@ public:
 			}		
 		::memcpy(mat_, out.mat_, sizeof(float) * 16);
 	}
+    
+    Matrix4x4 operator *(const Matrix4x4& matrix)
+    {
+        Matrix4x4 out;
+        for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+            {
+                out.mat_[i][j] =
+                    mat_[i][0] * matrix.mat_[0][j] + mat_[i][1] * matrix.mat_[1][j] +
+                    mat_[i][2] * matrix.mat_[2][j] + mat_[i][3] * matrix.mat_[3][j];
+            }
+        return out;
+    }
 
 	void setOrthoLH(float width, float height, float near_plane, float far_plane)
 	{
@@ -181,6 +207,41 @@ public:
 		this->setMatrix(out);
 	}
 
+    Matrix4x4 getInverse()
+    {
+        int a, i, j;
+        Matrix4x4 out;
+        Vector4D v, vec[3];
+        float det = 0.0f;
+
+        det = this->getDeterminant();
+        if (!det) return Matrix4x4();
+        for (i = 0; i < 4; i++)
+        {
+            for (j = 0; j < 4; j++)
+            {
+                if (j != i)
+                {
+                    a = j;
+                    if (j > i) a = a - 1;
+                    vec[a].x_ = (this->mat_[j][0]);
+                    vec[a].y_ = (this->mat_[j][1]);
+                    vec[a].z_ = (this->mat_[j][2]);
+                    vec[a].w_ = (this->mat_[j][3]);
+                }
+            }
+            v.cross(vec[0], vec[1], vec[2]);
+
+            out.mat_[0][i] = (powf(-1.0f, (float)i) * v.x_ / det);
+            out.mat_[1][i] = (powf(-1.0f, (float)i) * v.y_ / det);
+            out.mat_[2][i] = (powf(-1.0f, (float)i) * v.z_ / det);
+            out.mat_[3][i] = (powf(-1.0f, (float)i) * v.w_ / det);
+        }
+
+        return out;
+    }
+    
+    
 	Vector3D getEulerAngles()
 	{
 		float yaw, pitch, roll;
@@ -220,3 +281,23 @@ public:
 	}
 
 };
+
+
+inline Vector4D operator*(const Vector4D& vector, const Matrix4x4& matrix)
+{
+    Vector4D out{};
+
+    out.x_ = matrix.mat_[0][0] * vector.x_ + matrix.mat_[1][0] * vector.y_
+           + matrix.mat_[2][0] * vector.z_ + matrix.mat_[3][0] * vector.w_;
+
+    out.y_ = matrix.mat_[0][1] * vector.x_ + matrix.mat_[1][1] * vector.y_
+           + matrix.mat_[2][1] * vector.z_ + matrix.mat_[3][1] * vector.w_;
+
+    out.z_ = matrix.mat_[0][2] * vector.x_ + matrix.mat_[1][2] * vector.y_
+           + matrix.mat_[2][2] * vector.z_ + matrix.mat_[3][2] * vector.w_;
+
+    out.w_ = matrix.mat_[0][3] * vector.x_ + matrix.mat_[1][3] * vector.y_
+           + matrix.mat_[2][3] * vector.z_ + matrix.mat_[3][3] * vector.w_;
+
+    return out;
+}

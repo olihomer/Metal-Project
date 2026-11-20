@@ -27,6 +27,8 @@ public:
 		return v;
 	}
 
+    
+    
 	void cross(Vector4D& v1, Vector4D& v2, Vector4D& v3)
 	{
 		this->x_ = v1.y_ * (v2.z_ * v3.w_ - v3.z_ * v2.w_) - v1.z_ * (v2.y_ * v3.w_ - v3.y_ * v2.w_) + v1.w_ * (v2.y_ * v3.z_ - v2.z_ * v3.y_);
@@ -34,6 +36,11 @@ public:
 		this->z_ = v1.x_ * (v2.y_ * v3.w_ - v3.y_ * v2.w_) - v1.y_ * (v2.x_ * v3.w_ - v3.x_ * v2.w_) + v1.w_ * (v2.x_ * v3.y_ - v3.x_ * v2.y_);
 		this->w_ = -(v1.x_ * (v2.y_ * v3.z_ - v3.y_ * v2.z_) - v1.y_ * (v2.x_ * v3.z_ - v3.x_ * v2.z_) + v1.z_ * (v2.x_ * v3.y_ - v3.x_ * v2.y_));
 	}
+    
+    void print(std::string comment)
+    {
+        std::cout << comment << ": " << x_ << "," << y_ << "," << z_ << "," << w_ << std::endl;
+    }
 
 
 

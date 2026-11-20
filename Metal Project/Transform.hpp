@@ -11,6 +11,7 @@
 #include "Pool.hpp"
 #include "Vector3D.h"
 #include "Quaternion.h"
+#include "Matrix4x4.h"
 
 
 class Transform
@@ -24,6 +25,12 @@ public:
 public:
     Vector3D position_;
     Quaternion rotation_;
+    Matrix4x4 getWorldTransform()
+    {
+        auto matrix = rotation_.toMatrix();
+        matrix.setTranslation(position_);
+        return matrix;
+    }
     
 };
 #endif /* Transform_hpp */

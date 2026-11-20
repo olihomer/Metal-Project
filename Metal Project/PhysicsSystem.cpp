@@ -302,7 +302,12 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
                         
             auto deltaJn = ((relativeNormalSpeed - contact.targetNormalVelocity) / (rb1->invMass + rb2->invMass)); //normal impulse
             
-            contact.impulseAccumulator.normalLinear += deltaJn;
+            auto& accumulatedJn = contact.impulseAccumulator.normalLinear;
+            double oldJn = accumulatedJn;
+            
+            accumulatedJn = std::max(0.0, oldJn + deltaJn);
+            deltaJn = accumulatedJn - oldJn;
+            
             auto Jn = contact.worldNormal * deltaJn;
             std::cout << "Jn mag = " << Jn.magnitude()/contact.worldNormal.magnitude() << std::endl;
             
@@ -329,11 +334,18 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
             
             auto mu = 0.5f * (rb1->mu + rb2->mu); //average friction coefficient
             
-            auto deltaJt = -std::min<double>(mu * contact.impulseAccumulator.normalLinear, effectiveMass * Vt.magnitude());
-            auto JtAccum = contact.impulseAccumulator.tangentialLinear.magnitude() + deltaJt;
-            contact.impulseAccumulator.tangentialLinear = Vt.getNormalized() * -std::min(-JtAccum,effectiveMass * Vt.magnitude());
+            auto& accumulatedJt = contact.impulseAccumulator.tangentialLinear;
+            Vector3Dd oldJt = accumulatedJt;
             
-            auto Jt = Vt.getNormalized() * deltaJt;
+            Vector3Dd deltaJt = t * -effectiveMass * Vt.magnitude();
+            Vector3Dd newJt = oldJt + deltaJt;
+            
+            double maxFriction = mu * contact.impulseAccumulator.normalLinear;
+            
+            if(newJt.magnitude()> maxFriction) newJt = newJt.getNormalized() * maxFriction;
+            Vector3Dd Jt = newJt - oldJt;
+            
+            accumulatedJt = newJt;
             
             rb1->velocity = rb1->velocity - (Jt * rb1->invMass); //update translational velocity
             rb2->velocity = rb2->velocity + (Jt * rb2->invMass);
@@ -342,19 +354,22 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
             
             auto relativeSpinSpeed = Vector3Dd::dot((rb2->angularVelocity - rb1->angularVelocity),contact.worldNormal);
             auto effectiveInverseInertia = Vector3Dd::dot(Vector3Dd(contact.worldNormal) * (rb1->inverseWorldInertia + rb2->inverseWorldInertia), Vector3Dd(contact.worldNormal));
+            
             auto Js = -relativeSpinSpeed/effectiveInverseInertia;
             
             float muSpin = 0.5f * (rb1->muSpin + rb2->muSpin);
             constexpr float effectiveLength = 0.02f;
             auto maxSpin = contact.impulseAccumulator.normalLinear * muSpin * effectiveLength;
             
-            auto magJS = std::clamp<double>(Js,std::min(-maxSpin,maxSpin),std::max(-maxSpin,maxSpin));
+            auto& accumulatedJs = contact.impulseAccumulator.spinAngular;
+            auto oldJs = accumulatedJs;
             
-            auto spinImpulse = contact.worldNormal * magJS; //angular impulse
+            accumulatedJs = std::clamp(oldJs + Js, -maxSpin, maxSpin);
             
-            contact.impulseAccumulator.spinAngular += magJS;
-            contact.impulseAccumulator.spinAngular = std::clamp<double>(contact.impulseAccumulator.spinAngular,std::min(-maxSpin,maxSpin),std::max(-maxSpin,maxSpin));
-
+            double deltaJs = accumulatedJs - oldJs;
+      
+            auto spinImpulse = contact.worldNormal * deltaJs; //angular impulse
+            
             //rolling friction -> angular impulse
             Vector3Dd rollingImpulse{};
             
@@ -362,22 +377,21 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
             {
                 //is a sphere-ground collision. rb2 = the sphere
                 auto rollingW = rb2->angularVelocity - contact.worldNormal * Vector3Dd::dot(rb2->angularVelocity,contact.worldNormal);
-                auto Jr = rb2->worldInertia * rollingW * -1;
-                auto rollingMag = Jr.magnitude();
+                
+                auto& accumulatedJr = contact.impulseAccumulator.rollAngular;
+                Vector3Dd oldJr = accumulatedJr;
+
+                Vector3Dd Jr = rb2->worldInertia * rollingW * -1;
+                Vector3Dd newJr = oldJr + Jr;
+                
                 float muRoll = 0.5f * (rb1->muRoll + rb2->muRoll);
-                auto maxRollMag = contact.impulseAccumulator.normalLinear * muRoll * rb2->collider_.r_;
-                std::cout << "Rolling Mag " << rollingMag << " Max roll mag " << maxRollMag << std::endl;
+                auto maxRoll = contact.impulseAccumulator.normalLinear * muRoll * rb2->collider_.r_;
                 
-                rollingMag = std::clamp<double>(rollingMag,std::min(-maxRollMag,maxRollMag),std::max(maxRollMag,-maxRollMag));
+                if(newJr.magnitude() > maxRoll) newJr  = newJr.getNormalized() * maxRoll;
                 
-                std::cout << "Rolling Mag capped " << rollingMag <<std::endl;
+                rollingImpulse = newJr - oldJr;
+                accumulatedJr = newJr;
                 
-                rollingImpulse = Jr.getNormalized() * rollingMag; //angular impulse
-                
-                auto rollingAccum = contact.impulseAccumulator.rollAngular.magnitude() + rollingMag;
-                rollingAccum = std::clamp<double>(rollingAccum,std::min(-maxRollMag,maxRollMag),std::max(maxRollMag,-maxRollMag));
-                
-                contact.impulseAccumulator.rollAngular = Jr.getNormalized() * rollingAccum;
             }
             
             //combine impulses
@@ -432,3 +446,248 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
         }
     }
 }
+
+
+
+std::array<bool,6> Cuboid::getOverlappingFaces(Cuboid& cuboid2)
+{
+    std::array<bool,6> faceRelevant{};
+    auto& cuboid1 = *this;
+    
+    //calculater transform to convert cuboid2 to cuboid1 local coord system
+    
+    auto R1 = cuboid1.rotation.toMatrix3x3();
+    R1.print("R1");
+    auto R2 = cuboid2.rotation.toMatrix3x3();
+    R2.print("R2");
+
+    auto R2inR1 = R2 * R1.getInverse();
+    
+    R2inR1.print("R2inR1");
+
+    //calculate vector from cuboid1 to cuboid2 - make sure it is in local coordinates!
+    auto pR1 = (cuboid2.p - cuboid1.p) * R1.getInverse();
+        
+    //transform cuboid2 half lengths
+    auto halfLengthsRotated = cuboid2.halfEdge * R2inR1.abs(); //max extents vector relative to R1 origin
+        
+    //calculate max/min extent vectors for cuboid2
+    auto maxCuboid2 = pR1 + halfLengthsRotated;
+    auto minCuboid2 = pR1 - halfLengthsRotated;
+    
+    maxCuboid2.print("Max c2");
+    minCuboid2.print("Min c2");
+
+    //calculate max/min extent vectors for cuboid1
+    
+    auto maxCuboid1 = cuboid1.halfEdge;
+    auto minCuboid1 = cuboid1.halfEdge * -1.0f;
+    
+    maxCuboid1.print("Max c1");
+    minCuboid1.print("Min c1");
+    
+    //check for axis clearance which means they are definitely not colliding
+    
+    bool axisOverlap = true;
+    
+    if(maxCuboid2.x_ < minCuboid1.x_ || minCuboid2.x_ > maxCuboid1.x_){std::cout << "X-Axis Clearance\n";axisOverlap=false;}
+    if(maxCuboid2.y_ < minCuboid1.y_ || minCuboid2.y_ > maxCuboid1.y_){std::cout << "Y-Axis Clearance\n";axisOverlap=false;}
+    if(maxCuboid2.z_ < minCuboid1.z_ || minCuboid2.z_ > maxCuboid1.z_){std::cout << "Z-Axis Clearance\n";axisOverlap=false;}
+    
+    if(axisOverlap == false)return faceRelevant; // return with an easy false
+    
+    // All axes are overlapping => need to start looking for separating planes
+    
+    //Figure out nature of each overlap
+        
+    faceRelevant[0] = (minCuboid1.x_ > minCuboid2.x_); //face left
+    faceRelevant[1] = (maxCuboid1.x_ < maxCuboid2.x_); //face right
+    if(faceRelevant[0] && faceRelevant[1]){faceRelevant[0]=false;faceRelevant[1]=false;} //don't know if this is valid, but i'm trying it
+    
+    faceRelevant[2] = (minCuboid1.y_ > minCuboid2.y_); //face bottom
+    faceRelevant[3] = (maxCuboid1.y_ < maxCuboid2.y_); //face top
+    if(faceRelevant[2] && faceRelevant[3]){faceRelevant[2]=false;faceRelevant[3]=false;} //don't know if this is valid, but i'm trying it
+    
+    faceRelevant[4] = (minCuboid1.z_ > minCuboid2.z_); //face backward
+    faceRelevant[5] = (maxCuboid1.z_ < maxCuboid2.z_); //face forward
+    if(faceRelevant[4] && faceRelevant[5]){faceRelevant[4]=false;faceRelevant[5]=false;} //don't know if this is valid, but i'm trying it
+    
+    std::cout<<"Relevant faces:" << std::endl;
+    for(int i=0;i<6;i++)
+    {
+        if(faceRelevant[i]){std::cout<<faceNames[i]<<std::endl;}
+    }
+    
+    return faceRelevant;
+}
+
+
+bool Cuboid::isColliding(Cuboid &cuboid2)
+{
+    Cuboid& cuboid1 = *this;
+    
+    auto faces1 = cuboid1.getOverlappingFaces(cuboid2);
+    if(std::find(faces1.begin(),faces1.end(),true)==faces1.end())return false; //axis separation => no collision
+    
+    auto faces2 = cuboid2.getOverlappingFaces(cuboid1);
+    if(std::find(faces2.begin(),faces2.end(),true)==faces1.end())return false; //axis separation => no collision
+    
+    //no axis separation, so consider faces + edges
+    
+    int faceCount1{};
+    int faceCount2{};
+    
+    std::cout << "Relevant faces on cuboid1:" << std::endl;
+    for(int i=0;i<6;i++)if(faces1[i]){faceCount1++;std::cout << faceNames[i] << std::endl;}
+    
+    std::cout << "Relevant faces on cuboid2:" << std::endl;
+    for(int i=0;i<6;i++)if(faces2[i]){faceCount2++;std::cout << faceNames[i] << std::endl;}
+    
+    //Construct some candidate edges
+    
+    Vector3D edgeComponents[6] = {  Vector3D(-cuboid1.halfEdge.x_,0,0),Vector3D(cuboid1.halfEdge.x_,0,0),
+        Vector3D(0,-cuboid1.halfEdge.y_,0),Vector3D(0,cuboid1.halfEdge.y_,0),
+        Vector3D(0,0,-cuboid1.halfEdge.z_),Vector3D(0,0,cuboid1.halfEdge.z_)};
+    
+    //Cuboid 1:
+    
+    int edgeCount = 0;
+    
+    std::vector<std::pair<Vector3D,Vector3D>> edges1;
+    
+    std::cout << "Cuboid 1 candidate edges:" << std::endl;
+    
+    for(int index = 0; index < 6; index++)
+    {
+        if(edgeCount==faceCount1-1){break;}
+
+        if(faces1[index])
+        {
+            for(int j=index+1;j<6;j++)
+            {
+                if(faces1[j])
+                {
+                    //now have a pair, so construct the edge
+                    Vector3D v1 = edgeComponents[index] + edgeComponents[j];
+                    Vector3D v2 = v1;
+                    //there will be a zero component. set it to the +/- half length of the missing component
+                    if(v1.x_ == 0){v1.x_=-cuboid1.halfEdge.x_;v2.x_=-v1.x_;}
+                    if(v1.y_ == 0){v1.y_=-cuboid1.halfEdge.y_;v2.y_=-v1.y_;}
+                    if(v1.z_ == 0){v1.z_=-cuboid1.halfEdge.z_;v2.z_=-v1.z_;}
+                    
+                    edges1.push_back(std::pair(v1,v2));
+                    v1.print("v1");
+                    v2.print("v2");
+                    
+                    if(++edgeCount==faceCount1-1)break;
+                }
+            }
+        }
+    }
+    
+    //Cuboid 2:
+    
+    Vector3D edgeComponents2[6] = {  Vector3D(-cuboid2.halfEdge.x_,0,0),Vector3D(cuboid2.halfEdge.x_,0,0),
+        Vector3D(0,-cuboid2.halfEdge.y_,0),Vector3D(0,cuboid2.halfEdge.y_,0),
+        Vector3D(0,0,-cuboid2.halfEdge.z_),Vector3D(0,0,cuboid2.halfEdge.z_)};
+    
+    edgeCount = 0;
+    
+    std::vector<std::pair<Vector3D,Vector3D>> edges2;
+    std::cout << "Cuboid 2 candidate edges:" << std::endl;
+
+    
+    for(int index = 0; index < 6; index++)
+    {
+        if(edgeCount==faceCount2-1)break;
+        if(faces2[index])
+        {
+            for(int j=index+1;j<6;j++)
+            {
+                if(faces2[j])
+                {
+                    //now have a pair, so construct the edge
+                    Vector3D v1 = edgeComponents2[index] + edgeComponents2[j];
+                    Vector3D v2 = v1;
+                    //there will be a zero component. set it to the +/- half length of the missing component
+                    if(v1.x_ == 0){v1.x_=-cuboid2.halfEdge.x_;v2.x_=-v1.x_;}
+                    if(v1.y_ == 0){v1.y_=-cuboid2.halfEdge.y_;v2.y_=-v1.y_;}
+                    if(v1.z_ == 0){v1.z_=-cuboid2.halfEdge.z_;v2.z_=-v1.z_;}
+                    
+                    edges2.push_back(std::pair(v1,v2));
+                    v1.print("v1");
+                    v2.print("v2");
+                    
+                    if(++edgeCount==faceCount2-1)break;
+                }
+            }
+        }
+    }
+    
+    //recreate change of coordinate stuff so that we can work in R1 coordinates for everything
+    
+    auto R1 = cuboid1.rotation.toMatrix3x3();
+    auto R2 = cuboid2.rotation.toMatrix3x3();
+    
+    auto R2inR1 = R2 * R1.getInverse();
+    auto R1inR2 = R1 * R2.getInverse();
+
+    //create normals with pairs of edges (in cuboid 1 coords)
+    
+    for(auto edge1: edges1)
+    {
+        for(auto edge2: edges2)
+        {
+            //First test Cuboid 1 in local coordinates
+            auto vector1 = edge1.second-edge1.first;
+            auto vector2 = (edge2.second-edge2.first) * R2inR1;
+            auto normal = Vector3D::cross(vector1, vector2);
+            normal.normalize();
+            normal.print("normal 1");
+   
+            //test to see if that plane separates the objects
+            auto r =    cuboid1.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
+                        cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
+                        cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
+            
+            auto c = cuboid1.p * R1.getInverse();
+            
+            auto projMin = Vector3D::dot(c,normal)-r;
+            auto projMax = Vector3D::dot(c,normal)+r;
+            bool goodPlane1 = false;
+            if((projMin<0 && projMax<0) || (projMin>0 && projMax>0)){goodPlane1 = true;std::cout<<"Plane works on Cuboid 1"<<std::endl;}
+            
+            std::cout << "ProjMin " << projMin << " ProjMax " << projMax << std::endl;
+            
+            //Next test Cuboid 2 in local coordinates
+            vector1 = (edge1.second-edge1.first) * R1inR2;
+            vector2 = (edge2.second-edge2.first);
+            normal = Vector3D::cross(vector1, vector2);
+            normal.normalize();
+            normal.print("normal 2");
+            
+            //test to see if that plane separates the objects
+            r =    cuboid2.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
+                        cuboid2.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
+                        cuboid2.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
+            
+            c = cuboid2.p * R2.getInverse();
+            
+            projMin = Vector3D::dot(c,normal)-r;
+            projMax = Vector3D::dot(c,normal)+r;
+            
+            bool goodPlane2 = false;
+            if((projMin<0 && projMax<0) || (projMin>0 && projMax>0)){goodPlane2 = true;std::cout<<"Plane works on Cuboid 2"<<std::endl;}
+            
+            std::cout << "ProjMin " << projMin << " ProjMax " << projMax << std::endl;
+            
+            if(goodPlane1 && goodPlane2) return false; //both planes seem to separate the objects => no collision
+            
+        }
+    }
+    
+    //Run out of ideas => must be colliding
+    
+    return true;
+}
+

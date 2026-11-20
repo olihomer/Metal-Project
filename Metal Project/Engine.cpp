@@ -6,6 +6,9 @@
 //
 
 #include "Engine.hpp"
+#include "Transform.hpp"
+#include "Matrix4x4.h"
+#include "Matrix3x3.hpp"
 
 
 
@@ -13,24 +16,43 @@ void Engine::RunApp()
 {
     std::cout << "RunApp()" << std::endl;
     
-    loadMeshAsset("sphere.obj", "sphere", 1.0);
+    loadMeshAsset("cuboid_2x4x6.obj", "cuboid", 1.0);
 
     std::vector<ECS::Handle<ECS::Entity>> entities;
     entities.resize(50);
     
-    for(int i = 0; i < 1; i++)
+    for(int i = 0; i < 2; i++)
     {
         entities[i] = world_.newEntity("Entity");
-        world_.addComponent<Transform>(entities[i],Vector3D(0,i*3+3,0));
-        world_.addComponent<Mesh>(entities[i],getMeshReference("sphere"));
-        world_.addComponent<RigidBody>(entities[i],getPhysics("sphere"),1);
+        world_.addComponent<Mesh>(entities[i],getMeshReference("cuboid"));
+        /*world_.addComponent<RigidBody>(entities[i],getPhysics("cuboid"),1);
 
         RigidBody* rigidbody = world_.getComponent<RigidBody>(entities[i]);
         if(rigidbody)rigidbody->setCollider(ColliderType::Sphere, 1.0);
 
-        rigidbody->angularMomentum=Vector3D(0,0,5);
-        
+        rigidbody->angularMomentum = Vector3D(0,0,0);
+        rigidbody->velocity = Vector3D(0,0,0);*/
     }
+    world_.addComponent<Transform>(entities[0],Vector3D(0,0,0));
+    world_.addComponent<Transform>(entities[1],Vector3D(4,2,3));
+
+    
+    auto* trans1 = world_.getComponent<Transform>(entities[0]);
+    auto* trans2 = world_.getComponent<Transform>(entities[1]);
+    
+    //trans1->rotation_.setRotationAroundAxis(90 * DEG_RAD, Vector3D(0,1,0.3));
+
+    trans2->rotation_.setRotationAroundAxis(-45 * DEG_RAD, Vector3D(1,1,1));
+    
+    Cuboid cuboid1{trans1->position_,Vector3D(1.0f,2.0f,3.0f),trans1->rotation_};
+    Cuboid cuboid2{trans2->position_,Vector3D(1.0f,2.0f,3.0f),trans2->rotation_};
+        
+    if(!cuboid1.isColliding(cuboid2))
+        std::cout << "No collision" << std::endl;
+    else
+        std::cout << "COLLISION!" << std::endl;
+    
+    
     
     auto groundPlane = world_.newEntity("Ground");
     world_.addComponent<Transform>(groundPlane, Vector3D(0,0,0));
@@ -38,7 +60,7 @@ void Engine::RunApp()
     auto* groundRB = world_.getComponent<RigidBody>(groundPlane);
 
     groundRB->setCollider(ColliderType::GroundPlane);
-
+    
 
 }
 

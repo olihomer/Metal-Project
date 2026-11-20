@@ -26,9 +26,8 @@ public:
     Engine(MTL::Device* device)
     :renderSystem_(device)
     {
-        std::cout << "Constructor: " << this << std::endl;
         RunApp();
-        world_.printEntities();
+        //world_.printEntities();
     }
     void RenderFrame(void* pass, void* drawable){renderSystem_.RenderFrame(pass, drawable, world_);}
     void Update(double dt);

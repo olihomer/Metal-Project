@@ -10,9 +10,8 @@
 #include "Vector3D.h"
 #include "Vector4D.h"
 #include <array>
+#include "Matrix4x4.h"
 
-
-constexpr float TWO_PI = 6.28318530718f;
 
 // LEFT HANDED COORDINATE SYSTEM: POSITIVE X = RIGHT, POSITIVE Y = UP, POSITIVE Z = AWAY
 // ROTATIONS = ANTICLOCKWISE AS LOOKING ALONG POSITIVE AXIS
@@ -105,6 +104,13 @@ public:
         setIdentity();
     }
     
+    Matrix3x3(Matrix4x4 matrix)
+    {
+        for(int r=0;r<3;r++)
+            for(int c=0;c<3;c++)
+                mat_[r][c]=matrix.mat_[r][c];
+    }
+    
     Matrix3x3(std::array<float,9> values)
     {
         for(int r=0;r<3;r++)
@@ -128,8 +134,9 @@ public:
             }
     }
 
-    void print()
+    void print(std::string comment)
     {
+        std::cout << comment << ":" << std::endl;
         for(int r=0;r<3;r++)
         {
             for(int c=0;c<3;c++)
@@ -159,7 +166,7 @@ public:
         return mat_[0][0]+mat_[1][1]+mat_[2][2];
     }
 
-    Matrix3x3 invert()
+    Matrix3x3 getInverse()
     {
         float det = getDeterminant();
         
@@ -206,4 +213,30 @@ public:
         return out;
     }
 
+    Matrix3x3 abs() const
+    {
+        Matrix3x3 out;
+        for(int i=0; i<3;i++)
+            for(int j=0; j<3;j++)
+                out.mat_[i][j] = std::abs(mat_[i][j]);
+        return out;
+    }
 };
+
+
+inline Vector3D operator*(const Vector3D& vector, const Matrix3x3& matrix)
+{
+    Vector3D out{};
+
+    out.x_ = matrix.mat_[0][0] * vector.x_ + matrix.mat_[1][0] * vector.y_
+           + matrix.mat_[2][0] * vector.z_;
+
+    out.y_ = matrix.mat_[0][1] * vector.x_ + matrix.mat_[1][1] * vector.y_
+    + matrix.mat_[2][1] * vector.z_;
+
+    out.z_ = matrix.mat_[0][2] * vector.x_ + matrix.mat_[1][2] * vector.y_
+    + matrix.mat_[2][2] * vector.z_;
+
+
+    return out;
+}

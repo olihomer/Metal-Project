@@ -2,6 +2,7 @@
 #include "Vector3D.h"
 #include "Vector3Dd.hpp"
 #include "Vector4D.h"
+#include "Matrix3x3.hpp"
 #include "Matrix4x4.h"
 #include "Matrix3x3d.hpp"
 
@@ -133,6 +134,29 @@ public:
         double qx = v_.x_;
         double qy = v_.y_;
         double qz = v_.z_;
+
+        m.mat_[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
+        m.mat_[0][1] = 2 * qx * qy + 2 * qz * qw;
+        m.mat_[0][2] = 2 * qx * qz - 2 * qy * qw;
+        
+        m.mat_[1][0] = 2 * qx * qy - 2 * qz * qw;
+        m.mat_[1][1] = 1 - 2 * qx * qx - 2 * qz * qz;
+        m.mat_[1][2] = 2 * qy * qz + 2 * qx * qw;
+
+        m.mat_[2][0] = 2 * qx * qz + 2 * qy * qw;
+        m.mat_[2][1] = 2 * qy * qz - 2 * qx * qw;
+        m.mat_[2][2] = 1 - 2 * qx * qx - 2 * qy * qy;
+        
+        return m;
+    }
+    
+    Matrix3x3 toMatrix3x3()
+    {
+        Matrix3x3 m;
+        float qw = w_;
+        float qx = v_.x_;
+        float qy = v_.y_;
+        float qz = v_.z_;
 
         m.mat_[0][0] = 1 - 2 * qy * qy - 2 * qz * qz;
         m.mat_[0][1] = 2 * qx * qy + 2 * qz * qw;
