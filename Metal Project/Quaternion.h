@@ -56,10 +56,11 @@ public:
 
 	void setRotationAroundAxis(double theta, const Vector3D& axis) //RADIANS
 	{
+        auto norm = axis.getNormalized();
 		w_ = cos(0.5 * theta);
-		v_.x_ = sin(0.5 * theta) * axis.x_;
-		v_.y_ = sin(0.5 * theta) * axis.y_;
-		v_.z_ = sin(0.5 * theta) * axis.z_;
+		v_.x_ = sin(0.5 * theta) * norm.x_;
+		v_.y_ = sin(0.5 * theta) * norm.y_;
+		v_.z_ = sin(0.5 * theta) * norm.z_;
 	}
     
     void setRotationAroundAxis(double theta, const Vector3Dd& axis) //RADIANS

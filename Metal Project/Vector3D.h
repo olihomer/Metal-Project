@@ -91,7 +91,7 @@
 			return v;
 		}
 
-		float magnitude()
+		float magnitude() const
 		{
             return std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
 		}
@@ -107,7 +107,7 @@
             }
 		}
         
-        Vector3D getNormalized()
+        Vector3D getNormalized() const
         {
             Vector3D norm;
             float mag = magnitude();
