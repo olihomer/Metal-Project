@@ -505,17 +505,18 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
     auto R1 = cuboid1.rotation.toMatrix3x3();
     auto R2 = cuboid2.rotation.toMatrix3x3();
     auto R2inR1 = R2 * R1.getInverse();
+    auto R1inR2 = R1 * R2.getInverse();
 
     //create normals with pairs of edges (in cuboid 1 coords)
+    
+    auto p1 = cuboid1.p * R1.getInverse();
+    auto p2 = cuboid2.p * R1.getInverse();
     
     for(auto edge1: edges1)
     {
         for(auto edge2: edges2)
         {
             //Put everything in Cuboid 1 local coordinates
-            
-            auto p1 = cuboid1.p * R1.getInverse();
-            auto p2 = cuboid2.p * R1.getInverse();
             
             auto vector1 = edge1;
             auto vector2 = edge2 * R2inR1;
@@ -530,12 +531,10 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
             cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
             
-            auto rotatedHalfLengths = cuboid2.halfEdge * R2inR1.abs();
-            
-            auto r2 =    rotatedHalfLengths.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
-            rotatedHalfLengths.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
-            rotatedHalfLengths.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
-
+            auto r2 =    cuboid2.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal*R1inR2)) +
+            cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal*R1inR2)) +
+            cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal*R1inR2));
+  
             //calculate intervals along the normal
             
             auto iMin1 = -r1;
@@ -545,7 +544,10 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             
             std::cout << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
             
-            if(iMax2<iMin1||iMin2>iMax1){std::cout << "NORMAL WORKS - NO OVERLAP" << std::endl;return false;}
+            if(iMax2<iMin1 || iMin2>iMax1){
+                std::cout<<"Separation = " << std::max(iMin1-iMax2,iMin2-iMax1) << std::endl;
+                return false;
+            }
             
         }
     }
