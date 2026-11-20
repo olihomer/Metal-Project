@@ -94,7 +94,7 @@ class Vector3D;
             return v;
         }
 
-        double magnitude()
+        double magnitude() const
         {
             return std::sqrt(x_ * x_ + y_ * y_ + z_ * z_);
         }
@@ -110,7 +110,7 @@ class Vector3D;
             }
         }
         
-        Vector3Dd getNormalized()
+        Vector3Dd getNormalized() const
         {
             Vector3Dd norm;
             float mag = magnitude();

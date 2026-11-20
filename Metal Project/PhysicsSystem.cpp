@@ -451,10 +451,9 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
 
 bool Cuboid::hasOverlappingFaces(Cuboid& cuboid2)
 {
-    std::array<bool,6> faceRelevant{};
     auto& cuboid1 = *this;
     
-    //calculater transform to convert cuboid2 to cuboid1 local coord system
+    //calculate transform to convert cuboid2 to cuboid1 local coord system
     
     auto R1 = cuboid1.rotation.toMatrix3x3();
     auto R2 = cuboid2.rotation.toMatrix3x3();
@@ -553,5 +552,78 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
     }
     //must be colliding
     return true;
+}
+
+
+
+
+bool Cuboid::isColliding2(Cuboid &cuboid2)
+{
+    Cuboid& cuboid1 = *this;
+    bool colliding = true;
+    
+    //Candidate edges are just the half edge vectors, stored here in coordinates local to each cuboid
+    
+    std::array<Vector3D,3> edges1 = {Vector3D(cuboid1.halfEdge.x_,0,0),Vector3D(0,cuboid1.halfEdge.y_,0),Vector3D(0,0,cuboid1.halfEdge.z_)};
+    std::array<Vector3D,3> edges2 = {Vector3D(cuboid2.halfEdge.x_,0,0),Vector3D(0,cuboid2.halfEdge.y_,0),Vector3D(0,0,cuboid2.halfEdge.z_)};
+    
+    auto R1 = cuboid1.rotation.toMatrix3x3();
+    auto R2 = cuboid2.rotation.toMatrix3x3();
+    auto R2inR1 = R2 * R1.getInverse();
+    auto R1inR2 = R1 * R2.getInverse();
+
+    auto p1 = cuboid1.p * R1.getInverse();
+    auto p2 = cuboid2.p * R1.getInverse();
+    
+    std::array<Vector3D,15> normals;
+    
+    for(int i=0;i<3;i++)
+    {
+        normals[i] = edges1[i].getNormalized();
+        normals[i+3] = edges2[i].getNormalized();
+        for(int j=0;j<3;j++)
+            normals[6+(i*3)+j]=(Vector3D::cross(edges1[i],edges2[j] * R2inR1)); //normalise later: need to check magnitude
+    }
+    
+    for(int i=0; i<15;i++)
+    {
+        auto& normal = normals[i];
+        if(normal.magnitude()<0.0001f)continue;
+        normal.normalize();
+        
+        //calculate half-extents along the normal
+        
+        auto r1 =    cuboid1.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
+        cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
+        cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
+        
+        auto r2 =    cuboid2.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal*R1inR2)) +
+        cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal*R1inR2)) +
+        cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal*R1inR2));
+    
+        //calculate intervals along the normal
+        
+        auto iMin1 = -r1;
+        auto iMax1 = r1;
+        auto iMin2 = Vector3D::dot((p2-p1),normal) - r2;
+        auto iMax2 = Vector3D::dot((p2-p1),normal) + r2;
+        
+        std::cout << std::endl << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
+        
+        if(iMax2<iMin1 || iMin2>iMax1){
+            std::cout << "Normal index " << i << std::endl;
+            std::cout<<"Separation = " << std::max(iMin1-iMax2,iMin2-iMax1) << std::endl;
+            colliding = false;
+        }
+        else
+        {
+            std::cout << "Normal index " << i << std::endl;
+            std::cout << "Penetration = " << std::min(iMax1-iMin2,iMax2-iMin1) << std::endl;
+            
+        }
+    
+    }
+    
+    return colliding;
 }
 

@@ -68,6 +68,8 @@ struct Cuboid
     Quaternion rotation{};
     bool hasOverlappingFaces(Cuboid& cuboid2);
     bool isColliding(Cuboid& cuboid2);
+    bool isColliding2(Cuboid& cuboid2);
+
 };
 
 class PhysicsSystem

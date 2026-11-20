@@ -34,7 +34,7 @@ void Engine::RunApp()
         rigidbody->velocity = Vector3D(0,0,0);*/
     }
     world_.addComponent<Transform>(entities[0],Vector3D(0,0,0));
-    world_.addComponent<Transform>(entities[1],Vector3D(3.5,2,3));
+    world_.addComponent<Transform>(entities[1],Vector3D(5,8,3));
 
     
     auto* trans1 = world_.getComponent<Transform>(entities[0]);
@@ -52,6 +52,11 @@ void Engine::RunApp()
     else
         std::cout << "COLLISION!" << std::endl;
     
+    
+    if(!cuboid1.isColliding2(cuboid2))
+        std::cout << "No collision" << std::endl;
+    else
+        std::cout << "COLLISION!" << std::endl;
     
     
     auto groundPlane = world_.newEntity("Ground");
