@@ -538,6 +538,7 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             auto vector2 = edge2 * R2inR1;
             
             auto normal = Vector3D::cross(vector1, vector2);
+            if(normal.magnitude()<0.0001f)break; //skip nearly parallel edges
             normal.normalize();
             normal.print("normal");
             
