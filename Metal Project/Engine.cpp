@@ -33,13 +33,14 @@ void Engine::RunApp()
         rigidbody->angularMomentum = Vector3D(0,0,0);
         rigidbody->velocity = Vector3D(0,0,0);*/
     }
-    world_.addComponent<Transform>(entities[0],Vector3D(0,0,0));
+    world_.addComponent<Transform>(entities[0],Vector3D(1,0,0));
     world_.addComponent<Transform>(entities[1],Vector3D(3,2,3));
 
     
     auto* trans1 = world_.getComponent<Transform>(entities[0]);
     auto* trans2 = world_.getComponent<Transform>(entities[1]);
     
+    trans1->rotation_.setRotationAroundAxis(5 * DEG_RAD, Vector3D(0,1,0));
 
     trans2->rotation_.setRotationAroundAxis(45 * DEG_RAD, Vector3D(1,1,1));
     

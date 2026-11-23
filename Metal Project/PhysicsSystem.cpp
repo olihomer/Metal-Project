@@ -472,7 +472,7 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
 
     auto p1 = cuboid1.p * R1.getInverse();
     auto p2 = cuboid2.p * R1.getInverse();
-    Vector3D p1p2 = p2-p1;
+    Vector3D p1p2 = p2-p1; // vector from p1 to p2 in cuboid 1 coordinates
     
     std::array<Vector3D,15> normals;
     
@@ -591,39 +591,41 @@ bool Cuboid::isColliding(Cuboid &cuboid2)
             }
             else //z-axis edge
             {
-                va2.x_ = 1.0f;
+                va2.z_ = 1.0f;
                 va2.x_ = (minPenetrationNormal2.x_ < 0) ? -1.0f : 1.0f;
                 va2.y_ = (minPenetrationNormal2.y_ < 0) ? -1.0f : 1.0f;
-                va2 = Vector3D(va2.x_*cuboid1.halfEdge.x_,va2.y_*cuboid1.halfEdge.y_,va2.z_*cuboid1.halfEdge.z_);
+                va2 = Vector3D(va2.x_*cuboid2.halfEdge.x_,va2.y_*cuboid2.halfEdge.y_,va2.z_*cuboid2.halfEdge.z_);
                 vb2 = Vector3D(va2.x_,va2.y_,-va2.z_);
             }
             std::cout << "Cuboid 2 edge = " << va2 << " to " << vb2 << std::endl;
 
             //construct simultaneous equation - using cuboid 1 coordinate system
             
-            auto d = va1 - (va2 * R2inR1); //vector from cuboid 1 edge to cuboid 2 edge
+            auto d = va1 - (p1p2 + va2 * R2inR1); //vector from cuboid 1 edge to cuboid 2 edge
             auto n1 = (vb1-va1).getNormalized(); // direction of edge1
             auto n2 = ((vb2-va2)*R2inR1).getNormalized(); //direction of edge 2
             auto n1n2 = Vector3D::dot(n1,n2);
             
             Matrix2x2 solver{};
             Vector2D constants(Vector3D::dot(d,n2), Vector3D::dot(d,n1));
-            std::cout << "constants" << constants << std::endl;
             solver.mat_[0][0] = -n1n2;
-            solver.mat_[0][1] = 1;
-            solver.mat_[1][0] = -1;
+            solver.mat_[0][1] = -1;
+            solver.mat_[1][0] = 1;
             solver.mat_[1][1] = n1n2;
-            solver.print("solver");
             auto inverse = solver.getInverse();
-            inverse.print("inverse");
             auto solution = constants * inverse;
-            std::cout << "Solution = " << solution << std::endl;
             
-            Vector3D solution1 = (n1 * solution.x_) + va1;
-            Vector3D solution2 = (n2 * solution.y_) + va2;
+            Vector3D solution1 = (n1 * solution.x_) + va1; // cuboid1 collision point in local coords
+            Vector3D solution2 = (n2 * solution.y_) + p1p2 + va2*R2inR1; //cuboid2 collision point in cuboid1 local coords
             
-            std::cout << "Solution 1: " << solution1 << " Solution 2: " << solution2 << std::endl;
-
+            std::cout << "Cuboid 1 local coords - Solution 1: " << solution1 << " Solution 2: " << solution2 << std::endl;
+            
+            auto solution1World = p1 + solution1 * R1;
+            auto solution2World = p1 + solution2 * R1;
+            auto midSolutionWorld = (solution1World + solution2World) * 0.5f;
+            
+            std::cout << "World coords - Solution 1: " << solution1World << " Solution 2: " << solution2World << " Average: " << midSolutionWorld << std::endl;
+            
             
         }
     
