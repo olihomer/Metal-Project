@@ -34,26 +34,19 @@ void Engine::RunApp()
         rigidbody->velocity = Vector3D(0,0,0);*/
     }
     world_.addComponent<Transform>(entities[0],Vector3D(0,0,0));
-    world_.addComponent<Transform>(entities[1],Vector3D(5,8,3));
+    world_.addComponent<Transform>(entities[1],Vector3D(3,2,3));
 
     
     auto* trans1 = world_.getComponent<Transform>(entities[0]);
     auto* trans2 = world_.getComponent<Transform>(entities[1]);
     
-    //trans1->rotation_.setRotationAroundAxis(90 * DEG_RAD, Vector3D(0,1,0.3));
 
     trans2->rotation_.setRotationAroundAxis(45 * DEG_RAD, Vector3D(1,1,1));
     
     Cuboid cuboid1{trans1->position_,Vector3D(1.0f,2.0f,3.0f),trans1->rotation_};
     Cuboid cuboid2{trans2->position_,Vector3D(1.0f,2.0f,3.0f),trans2->rotation_};
-        
+    
     if(!cuboid1.isColliding(cuboid2))
-        std::cout << "No collision" << std::endl;
-    else
-        std::cout << "COLLISION!" << std::endl;
-    
-    
-    if(!cuboid1.isColliding2(cuboid2))
         std::cout << "No collision" << std::endl;
     else
         std::cout << "COLLISION!" << std::endl;

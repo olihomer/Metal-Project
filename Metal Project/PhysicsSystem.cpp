@@ -6,6 +6,7 @@
 //
 
 #include "PhysicsSystem.hpp"
+#include "Matrix2x2.hpp"
 
 constexpr bool showDebug = false;
 
@@ -449,123 +450,20 @@ void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& co
 
 
 
-bool Cuboid::hasOverlappingFaces(Cuboid& cuboid2)
-{
-    auto& cuboid1 = *this;
-    
-    //calculate transform to convert cuboid2 to cuboid1 local coord system
-    
-    auto R1 = cuboid1.rotation.toMatrix3x3();
-    auto R2 = cuboid2.rotation.toMatrix3x3();
-
-    auto R2inR1 = R2 * R1.getInverse();
-    
-    //calculate vector from cuboid1 to cuboid2 - make sure it is in local coordinates!
-    auto pR1 = (cuboid2.p - cuboid1.p) * R1.getInverse();
-        
-    //transform cuboid2 half lengths
-    auto halfLengthsRotated = cuboid2.halfEdge * R2inR1.abs(); //max extents vector relative to R1 origin
-        
-    //calculate max/min extent vectors for cuboid2
-    auto maxCuboid2 = pR1 + halfLengthsRotated;
-    auto minCuboid2 = pR1 - halfLengthsRotated;
-
-    //calculate max/min extent vectors for cuboid1
-    
-    auto maxCuboid1 = cuboid1.halfEdge;
-    auto minCuboid1 = cuboid1.halfEdge * -1.0f;
-
-    //check for axis clearance which means they are definitely not colliding
-    
-    bool axisOverlap = true;
-    
-    if(maxCuboid2.x_ < minCuboid1.x_ || minCuboid2.x_ > maxCuboid1.x_){std::cout << "X-Axis Clearance\n";axisOverlap=false;}
-    if(maxCuboid2.y_ < minCuboid1.y_ || minCuboid2.y_ > maxCuboid1.y_){std::cout << "Y-Axis Clearance\n";axisOverlap=false;}
-    if(maxCuboid2.z_ < minCuboid1.z_ || minCuboid2.z_ > maxCuboid1.z_){std::cout << "Z-Axis Clearance\n";axisOverlap=false;}
-    
-    if(axisOverlap == false)return false; // return with an easy false
-
-    return true;
-}
-
-
 bool Cuboid::isColliding(Cuboid &cuboid2)
 {
     Cuboid& cuboid1 = *this;
-    
-    if(!cuboid1.hasOverlappingFaces(cuboid2))return false;
-    if(!cuboid2.hasOverlappingFaces(cuboid1))return false;
-    
-    //Candidate edges are just the half edge vectors, stored here in coordinates local to each cuboid
-    
-    std::array<Vector3D,3> edges1 = {Vector3D(cuboid1.halfEdge.x_,0,0),Vector3D(0,cuboid1.halfEdge.y_,0),Vector3D(0,0,cuboid1.halfEdge.z_)};
-    std::array<Vector3D,3> edges2 = {Vector3D(cuboid2.halfEdge.x_,0,0),Vector3D(0,cuboid2.halfEdge.y_,0),Vector3D(0,0,cuboid2.halfEdge.z_)};
-    
-    auto R1 = cuboid1.rotation.toMatrix3x3();
-    auto R2 = cuboid2.rotation.toMatrix3x3();
-    auto R2inR1 = R2 * R1.getInverse();
-    auto R1inR2 = R1 * R2.getInverse();
-
-    //create normals with pairs of edges (in cuboid 1 coords)
-    
-    auto p1 = cuboid1.p * R1.getInverse();
-    auto p2 = cuboid2.p * R1.getInverse();
-    
-    for(auto edge1: edges1)
-    {
-        for(auto edge2: edges2)
-        {
-            //Put everything in Cuboid 1 local coordinates
-            
-            auto vector1 = edge1;
-            auto vector2 = edge2 * R2inR1;
-            
-            auto normal = Vector3D::cross(vector1, vector2);
-            if(normal.magnitude()<0.0001f)continue; //skip nearly parallel edges
-            normal.normalize();
-            normal.print("normal");
-            
-            //calculate half-extents along the normal
-            auto r1 =    cuboid1.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal)) +
-            cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal)) +
-            cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
-            
-            auto r2 =    cuboid2.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal*R1inR2)) +
-            cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal*R1inR2)) +
-            cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal*R1inR2));
-  
-            //calculate intervals along the normal
-            
-            auto iMin1 = -r1;
-            auto iMax1 = r1;
-            auto iMin2 = Vector3D::dot((p2-p1),normal) - r2;
-            auto iMax2 = Vector3D::dot((p2-p1),normal) + r2;
-            
-            std::cout << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
-            
-            if(iMax2<iMin1 || iMin2>iMax1){
-                std::cout<<"Separation = " << std::max(iMin1-iMax2,iMin2-iMax1) << std::endl;
-                return false;
-            }
-            
-        }
-    }
-    //must be colliding
-    return true;
-}
-
-
-
-
-bool Cuboid::isColliding2(Cuboid &cuboid2)
-{
-    Cuboid& cuboid1 = *this;
     bool colliding = true;
+    float minPenetration = MAXFLOAT;
+    Vector3D minPenetrationNormal{};
+    int minPenetrationIndex{};
     
     //Candidate edges are just the half edge vectors, stored here in coordinates local to each cuboid
     
     std::array<Vector3D,3> edges1 = {Vector3D(cuboid1.halfEdge.x_,0,0),Vector3D(0,cuboid1.halfEdge.y_,0),Vector3D(0,0,cuboid1.halfEdge.z_)};
     std::array<Vector3D,3> edges2 = {Vector3D(cuboid2.halfEdge.x_,0,0),Vector3D(0,cuboid2.halfEdge.y_,0),Vector3D(0,0,cuboid2.halfEdge.z_)};
+    std::array<std::string,15> descriptions = {"Cuboid 1 x face", "Cuboid 1 y face","Cuboid 1 z face","Cuboid 2 x face", "Cuboid 2 y face","Cuboid 2 z face","Edge cross xx","Edge cross xy","Edge cross xz","Edge cross yx","Edge cross yy","Edge cross yz","Edge cross zx","Edge cross zy","Edge cross zz"};
+
     
     auto R1 = cuboid1.rotation.toMatrix3x3();
     auto R2 = cuboid2.rotation.toMatrix3x3();
@@ -574,13 +472,14 @@ bool Cuboid::isColliding2(Cuboid &cuboid2)
 
     auto p1 = cuboid1.p * R1.getInverse();
     auto p2 = cuboid2.p * R1.getInverse();
+    Vector3D p1p2 = p2-p1;
     
     std::array<Vector3D,15> normals;
     
     for(int i=0;i<3;i++)
     {
         normals[i] = edges1[i].getNormalized();
-        normals[i+3] = edges2[i].getNormalized();
+        normals[i+3] = (edges2[i] * R2inR1).getNormalized();
         for(int j=0;j<3;j++)
             normals[6+(i*3)+j]=(Vector3D::cross(edges1[i],edges2[j] * R2inR1)); //normalise later: need to check magnitude
     }
@@ -598,8 +497,8 @@ bool Cuboid::isColliding2(Cuboid &cuboid2)
         cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal));
         
         auto r2 =    cuboid2.halfEdge.x_*abs(Vector3D::dot(Vector3D(1,0,0),normal*R1inR2)) +
-        cuboid1.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal*R1inR2)) +
-        cuboid1.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal*R1inR2));
+        cuboid2.halfEdge.y_*abs(Vector3D::dot(Vector3D(0,1,0),normal*R1inR2)) +
+        cuboid2.halfEdge.z_*abs(Vector3D::dot(Vector3D(0,0,1),normal*R1inR2));
     
         //calculate intervals along the normal
         
@@ -608,7 +507,7 @@ bool Cuboid::isColliding2(Cuboid &cuboid2)
         auto iMin2 = Vector3D::dot((p2-p1),normal) - r2;
         auto iMax2 = Vector3D::dot((p2-p1),normal) + r2;
         
-        std::cout << std::endl << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
+        std::cout << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
         
         if(iMax2<iMin1 || iMin2>iMax1){
             std::cout << "Normal index " << i << std::endl;
@@ -617,10 +516,119 @@ bool Cuboid::isColliding2(Cuboid &cuboid2)
         }
         else
         {
+            float penetration = std::min(iMax1-iMin2,iMax2-iMin1);
+            if(penetration < minPenetration)
+            {
+                minPenetration = penetration;
+                minPenetrationIndex = i;
+                minPenetrationNormal=normals[i];
+                if(Vector3D::dot(minPenetrationNormal,p1p2)<0){minPenetrationNormal = minPenetrationNormal * -1.0f;descriptions[i] += "(negative)";}
+            }
+            
             std::cout << "Normal index " << i << std::endl;
-            std::cout << "Penetration = " << std::min(iMax1-iMin2,iMax2-iMin1) << std::endl;
+            std::cout << "Penetration = " << penetration << "\n" << std::endl;
             
         }
+    
+    }
+    
+    if(colliding)
+    {
+        std::cout << "Minimum penetration = " << minPenetration << " at normal " << minPenetrationNormal << " (index = " << minPenetrationIndex << ")" << std::endl;
+        std::cout << "Normal corresponds to " << descriptions[minPenetrationIndex] << std::endl;
+        std::cout << "Normal in cuboid 2 coordinates = " << minPenetrationNormal * R1inR2 << std::endl;
+    
+        Vector3D va1{},vb1{},edge1{};
+        Vector3D va2{},vb2{},edge2{};
+        
+        if(minPenetrationIndex>5) //edge-to-edge contact
+        {
+            //construct the cuboid 1 edge
+            if(minPenetrationIndex/3<3) //x-axis edge
+            {
+                va1.x_ = 1.0f;
+                va1.y_ = (minPenetrationNormal.y_ < 0) ? -1.0f : 1.0f;
+                va1.z_ = (minPenetrationNormal.z_ < 0) ? -1.0f : 1.0f;
+                va1 = Vector3D(va1.x_*cuboid1.halfEdge.x_,va1.y_*cuboid1.halfEdge.y_,va1.z_*cuboid1.halfEdge.z_);
+                vb1 = Vector3D(-va1.x_,va1.y_,va1.z_);
+            }
+            else if(minPenetrationIndex/3<4) //y-axis edge
+            {
+                va1.y_ = 1.0f;
+                va1.x_ = (minPenetrationNormal.x_ < 0) ? -1.0f : 1.0f;
+                va1.z_ = (minPenetrationNormal.z_ < 0) ? -1.0f : 1.0f;
+                va1 = Vector3D(va1.x_*cuboid1.halfEdge.x_,va1.y_*cuboid1.halfEdge.y_,va1.z_*cuboid1.halfEdge.z_);
+                vb1 = Vector3D(va1.x_,-va1.y_,va1.z_);
+            }
+            else //z-axis edge
+            {
+                va1.z_ = 1.0f;
+                va1.x_ = (minPenetrationNormal.x_ < 0) ? -1.0f : 1.0f;
+                va1.y_ = (minPenetrationNormal.y_ < 0) ? -1.0f : 1.0f;
+                va1 = Vector3D(va1.x_*cuboid1.halfEdge.x_,va1.y_*cuboid1.halfEdge.y_,va1.z_*cuboid1.halfEdge.z_);
+                vb1 = Vector3D(va1.x_,va1.y_,-va1.z_);
+            }
+
+            std::cout << "Cuboid 1 edge = " << va1 << " to " << vb1 << std::endl;
+            
+            //construct the cuboid 2 edge
+            auto minPenetrationNormal2 = minPenetrationNormal * R1inR2 * -1.0f;
+            if(minPenetrationIndex%3==0) //x-axis edge
+            {
+                va2.x_ = 1.0f;
+                va2.y_ = (minPenetrationNormal2.y_ < 0) ? -1.0f : 1.0f;
+                va2.z_ = (minPenetrationNormal2.z_ < 0) ? -1.0f : 1.0f;
+                va2 = Vector3D(va2.x_*cuboid1.halfEdge.x_,va2.y_*cuboid1.halfEdge.y_,va2.z_*cuboid1.halfEdge.z_);
+                vb2 = Vector3D(-va2.x_,va2.y_,va2.z_);
+            }
+            else if(minPenetrationIndex%3==1) //y-axis edge
+            {
+                va2.y_ = 1.0f;
+                va2.x_ = (minPenetrationNormal2.x_ < 0) ? -1.0f : 1.0f;
+                va2.z_ = (minPenetrationNormal2.z_ < 0) ? -1.0f : 1.0f;
+                va2 = Vector3D(va2.x_*cuboid1.halfEdge.x_,va2.y_*cuboid1.halfEdge.y_,va2.z_*cuboid1.halfEdge.z_);
+                vb2 = Vector3D(va2.x_,-va2.y_,va2.z_);
+            }
+            else //z-axis edge
+            {
+                va2.x_ = 1.0f;
+                va2.x_ = (minPenetrationNormal2.x_ < 0) ? -1.0f : 1.0f;
+                va2.y_ = (minPenetrationNormal2.y_ < 0) ? -1.0f : 1.0f;
+                va2 = Vector3D(va2.x_*cuboid1.halfEdge.x_,va2.y_*cuboid1.halfEdge.y_,va2.z_*cuboid1.halfEdge.z_);
+                vb2 = Vector3D(va2.x_,va2.y_,-va2.z_);
+            }
+            std::cout << "Cuboid 2 edge = " << va2 << " to " << vb2 << std::endl;
+
+            //construct simultaneous equation - using cuboid 1 coordinate system
+            
+            auto d = va1 - (va2 * R2inR1); //vector from cuboid 1 edge to cuboid 2 edge
+            auto n1 = (vb1-va1).getNormalized(); // direction of edge1
+            auto n2 = ((vb2-va2)*R2inR1).getNormalized(); //direction of edge 2
+            auto n1n2 = Vector3D::dot(n1,n2);
+            
+            Matrix2x2 solver{};
+            Vector2D constants(Vector3D::dot(d,n2), Vector3D::dot(d,n1));
+            std::cout << "constants" << constants << std::endl;
+            solver.mat_[0][0] = -n1n2;
+            solver.mat_[0][1] = 1;
+            solver.mat_[1][0] = -1;
+            solver.mat_[1][1] = n1n2;
+            solver.print("solver");
+            auto inverse = solver.getInverse();
+            inverse.print("inverse");
+            auto solution = constants * inverse;
+            std::cout << "Solution = " << solution << std::endl;
+            
+            Vector3D solution1 = (n1 * solution.x_) + va1;
+            Vector3D solution2 = (n2 * solution.y_) + va2;
+            
+            std::cout << "Solution 1: " << solution1 << " Solution 2: " << solution2 << std::endl;
+
+            
+        }
+    
+    
+    
     
     }
     

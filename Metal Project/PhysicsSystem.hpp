@@ -66,9 +66,7 @@ struct Cuboid
     Vector3D p{};
     Vector3D halfEdge{};
     Quaternion rotation{};
-    bool hasOverlappingFaces(Cuboid& cuboid2);
     bool isColliding(Cuboid& cuboid2);
-    bool isColliding2(Cuboid& cuboid2);
 
 };
 
