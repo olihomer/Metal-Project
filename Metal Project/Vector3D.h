@@ -31,6 +31,20 @@
 			temp.z_ = v1.x_ * v2.y_ - v1.y_ * v2.x_;
 			return temp;
 		}
+        
+        static Vector3D clamp(const Vector3D& vector, const Vector3D& limit1, const Vector3D& limit2)
+        {
+            Vector3D out{};
+            auto xmin = std::min(limit1.x_,limit2.x_);
+            auto xmax = std::max(limit1.x_,limit2.x_);
+            auto ymin = std::min(limit1.y_,limit2.y_);
+            auto ymax = std::max(limit1.y_,limit2.y_);
+            auto zmin = std::min(limit1.z_,limit2.z_);
+            auto zmax = std::max(limit1.z_,limit2.z_);
+            
+            out = Vector3D(std::clamp(vector.x_,xmin,xmax),std::clamp(vector.y_,ymin,ymax),std::clamp(vector.z_,zmin,zmax));
+            return out;
+        }
 
 		Vector3D operator+(const Vector3D& vector)
 		{
@@ -125,6 +139,14 @@
             std::cout << comment << ": " << x_ << "," << y_ << "," << z_ << std::endl;
         }
 
+        Vector3D getAbs() const
+        {
+            Vector3D out;
+            out.x_ = std::abs(x_);
+            out.y_ = std::abs(y_);
+            out.z_ = std::abs(z_);
+            return out;
+        }
 	};
 
 

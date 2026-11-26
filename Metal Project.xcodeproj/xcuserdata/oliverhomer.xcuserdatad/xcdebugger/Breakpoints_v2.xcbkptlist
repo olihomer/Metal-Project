@@ -43,9 +43,9 @@
             filePath = "Metal Project/RigidBody.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "27"
-            endingLineNumber = "27"
-            landmarkName = "RigidBody(physics)"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "RigidBody(physics, motionType)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -59,9 +59,9 @@
             filePath = "Metal Project/RigidBody.hpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "28"
-            endingLineNumber = "28"
-            landmarkName = "RigidBody(physics)"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "RigidBody(physics, motionType)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

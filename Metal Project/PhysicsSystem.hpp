@@ -66,7 +66,7 @@ struct Cuboid
     Vector3D p{};
     Vector3D halfEdge{};
     Quaternion rotation{};
-    bool isColliding(Cuboid& cuboid2);
+    std::vector<Contact> isColliding(Cuboid& cuboid2);
 
 };
 
@@ -79,8 +79,8 @@ public:
     double magT0{};
     double magT1{};
 private:
-    static constexpr float gravity = 9.81;
-    static constexpr float density = 1.225;
+    static constexpr float gravity = 0.0f * 9.81f;
+    static constexpr float density = 1.225f;
     static constexpr float minVelocity = 0.005f;
     static constexpr float stickingThreshold = 0.05f;
     static constexpr float zeroRestitutionThreshold = 0.005f;
@@ -98,7 +98,6 @@ private:
     void correctPenetrations(World& world, std::vector<Contact>& contacts) const;
     
     void applyDamping(RigidBody& rigidbody) const;
-
 };
 
 

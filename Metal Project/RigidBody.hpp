@@ -15,12 +15,20 @@
 #include "Mesh.hpp"
 #include "Quaternion.h"
 
+enum class MotionType
+{
+    Static,
+    Dynamic,
+    Kinematic
+};
+
 class RigidBody
 {
 public:
-    RigidBody(){;};
-    RigidBody(MeshAsset::physics physics, double density = 800)
+    RigidBody(MotionType motionType):motionType_(motionType){};
+    RigidBody(MeshAsset::physics physics, MotionType motionType, double density = 800)
     {
+        motionType_ = motionType;
         inverseBodyInertia = physics.inverseBodyInertia_ * (1/density);
         bodyInertia = physics.bodyInertia_ * density;
         mass = physics.massAtUnitDensity_ * density;
@@ -28,6 +36,12 @@ public:
         bodyInertia.print("Body inertia");
         inverseBodyInertia.print("Inverse body inertia");
         invMass = 1/mass;
+        if(motionType==MotionType::Static)
+        {
+            invMass = 0;
+            inverseBodyInertia = Matrix3x3d() * 0;
+            inverseWorldInertia = Matrix3x3d() * 0;
+        }
     }
 
     double mass = 1.0;
@@ -47,6 +61,7 @@ public:
     float elasticity = 0.6f;
     void setCollider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0){collider_=  Collider(type,r,x,y,z);}
     Collider collider_{ColliderType::None};
+    MotionType motionType_ = MotionType::Dynamic;
     void updateWorldInertia(Quaternion rotation);
     
 private:
