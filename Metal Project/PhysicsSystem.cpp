@@ -8,8 +8,6 @@
 #include "PhysicsSystem.hpp"
 #include "Matrix2x2.hpp"
 
-constexpr bool showDebug = false;
-
 
 void PhysicsSystem::updatePhysics(World& world, double dt)
 {
@@ -19,18 +17,21 @@ void PhysicsSystem::updatePhysics(World& world, double dt)
     
     integratePositions(world, dt);
 
-    contacts_ = detectCollisions(world);
+    contactManifolds_ = detectCollisions(world);
         
-    if(contacts_.size()>0)
+    if(contactManifolds_.size()>0)
     {
-        solveContactsIterator(world, contacts_, dt, 10);
+        solveContactsIterator(world, contactManifolds_, dt, 10);
         std::cout << "\n--- Penetration Check ---" << std::endl;
     }
     
-    auto temp = detectCollisions(world);
-
-    correctPenetrations(world, temp);
-
+    for(int i=0; i<4; i++)
+    {
+        auto temp = detectCollisions(world);
+        if(temp.size()==0)break;
+        correctPenetrations(world, temp);
+    }
+     
 }
 
 
@@ -144,12 +145,15 @@ void PhysicsSystem::applyDamping(RigidBody &rigidbody) const
     
 }
 
-void PhysicsSystem::correctPenetrations(World &world, std::vector<Contact>& contacts) const
+void PhysicsSystem::correctPenetrations(World &world, std::vector<ContactManifold>& contactManifolds) const
 {
     //iterate through contacts
-    for(auto& contact: contacts)
+    for(auto& contactManifold: contactManifolds)
     {
-        if(showDebug) std::cout << "Penetration: " << contact.penetrationDepth << std::endl;
+        if(!contactManifold.contacts.size())continue;
+        auto& contact = contactManifold.deepestContact();
+        if(showDebug || true) std::cout << "Penetration to correct: " << contact.penetrationDepth << " along normal " << contact.worldNormal << std::endl;
+        if(contact.penetrationDepth<=0.0){std::cout<<"Skipping zero penetration"<<std::endl;continue;}
         auto* rb1 = contact.entity1.rigidbody;
         auto* rb2 = contact.entity2.rigidbody;
         auto* trans1 = contact.entity1.transform;
@@ -157,11 +161,17 @@ void PhysicsSystem::correctPenetrations(World &world, std::vector<Contact>& cont
         
         trans1->position_.print("Position 1 before");
         trans2->position_.print("Position 2 before");
-        (trans2->position_-trans1->position_).print("delta before");
+        std::cout << "Delta mag before " << (trans2->position_-trans1->position_).magnitude() << std::endl;
         
-        auto correctionVector1 = (contact.worldNormal * contact.penetrationDepth) * ((rb1->invMass)/(rb1->invMass+rb2->invMass));
-        auto correctionVector2 = (contact.worldNormal * -contact.penetrationDepth) * ((rb2->invMass)/(rb1->invMass+rb2->invMass));
+        auto adjustedPenetration = correctionFactor * std::max(0.0, contact.penetrationDepth - slop);
+        
+        auto correctionVector1 = (contact.worldNormal * adjustedPenetration) * ((rb1->invMass)/(rb1->invMass+rb2->invMass));
+        auto correctionVector2 = (contact.worldNormal * -adjustedPenetration) * ((rb2->invMass)/(rb1->invMass+rb2->invMass));
 
+        auto delta = trans2->position_ - trans1->position_;
+        auto check = Vector3D::dot(contact.worldNormal,delta);
+        if(check>0)throw std::runtime_error("reverse correction");
+        
         if(correctionVector1.magnitude()>1.0f || correctionVector2.magnitude()>1.0f)throw std::runtime_error("runaway correction");
         
         trans1->position_ = trans1->position_ + correctionVector1;
@@ -171,16 +181,16 @@ void PhysicsSystem::correctPenetrations(World &world, std::vector<Contact>& cont
         correctionVector2.print("Correction 2");
         trans1->position_.print("Position 1 after");
         trans2->position_.print("Position 2 after");
-        (trans2->position_-trans1->position_).print("delta after");
+        std::cout << "Delta mag after " << (trans2->position_-trans1->position_).magnitude() << std::endl;
 
         
     }
 }
 
 
-std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
+std::vector<ContactManifold> PhysicsSystem::detectCollisions(World& world)
 {
-    std::vector<Contact> contacts;
+    std::vector<ContactManifold> contactManifolds;
     
     //put all candidate objects into a vector
     std::vector<CollisionCandidate> candidates;
@@ -209,6 +219,7 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
                 if(separationVector.magnitude() < sumColliders + collisionThreshold)
                 {
                     //populate contact struct
+                    ContactManifold contactManifold;
                     Contact contact;
                     contact.entity1 = candidate1;
                     contact.entity2 = candidate2;
@@ -221,7 +232,8 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
                     contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
 
                     contact.worldLocation = candidate2.transform->position_ + (contact.worldNormal * candidate2.rigidbody->collider_.r_);
-                    contacts.push_back(contact);
+                    contactManifold.contacts.push_back(contact);
+                    contactManifolds.push_back(contactManifold);
                     if(showDebug){
                         contact.worldLocation.print("Sphere-Sphere collision at world location: ");
                         std::cout << "Entities = " << i << " and " << j << std::endl;
@@ -241,6 +253,7 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
                 if(separation < collisionThreshold) //also captures objects that are close but not penetrating
                 {
                     //populate contact struct
+                    ContactManifold contactManifold;
                     Contact contact;
                     contact.entity1 = ground;
                     contact.entity2 = sphere;
@@ -254,8 +267,9 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
 
                     contact.worldLocation = Vector3D(sphere.transform->position_.x_,ground.transform->position_.y_,sphere.transform->position_.z_);
                     contact.isRolling = true;
-                    contacts.push_back(contact);
-
+                    contactManifold.contacts.push_back(contact);
+                    contactManifolds.push_back(contactManifold);
+                    
                     if(showDebug){
                         contact.worldLocation.print("Sphere-ground collision at world location: ");
                         std::cout << "Entities = " << i << " and " << j << std::endl;
@@ -265,18 +279,48 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
             }
             else if(type1==ColliderType::Cuboid && type2==ColliderType::Cuboid)
             {
-                //TO DO - PUT CUBOID IN THE COLLIDE TO MAKE THIS LESS CLUNKY
+                //TO DO - PUT CUBOID IN THE COLLIDER TO MAKE THIS LESS CLUNKY
                 Cuboid cuboid1{candidate1.transform ->position_,Vector3D(candidate1.rigidbody->collider_.x_,candidate1.rigidbody->collider_.y_,candidate1.rigidbody->collider_.z_),candidate1.transform->rotation_};
                 Cuboid cuboid2{candidate2.transform ->position_,Vector3D(candidate2.rigidbody->collider_.x_,candidate2.rigidbody->collider_.y_,candidate2.rigidbody->collider_.z_),candidate2.transform->rotation_};
                 
-                contacts = cuboid1.isColliding(cuboid2); //get contacts (location and normals only) from cuboid collision detector
-                for(auto& contact: contacts) //fill in the missing contact fields
+                ContactManifold contactManifold;
+                contactManifold.contacts = cuboid1.isColliding(cuboid2); //get contacts (location and normals only) from cuboid collision detector
+                if(contactManifold.contacts.size()>0)
                 {
-                    contact.entity1 = candidate1;
-                    contact.entity2 = candidate2;
-                    double vn = Vector3D::dot(candidate2.rigidbody->velocity-candidate1.rigidbody->velocity,contact.worldNormal);
-                    double e = 0.5 * (candidate1.rigidbody->elasticity + candidate2.rigidbody->elasticity);
-                    contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
+                    for(auto& contact: contactManifold.contacts) //fill in the missing contact fields
+                    {
+                        contact.entity1 = candidate1;
+                        contact.entity2 = candidate2;
+                        double vn = Vector3D::dot(candidate2.rigidbody->velocity-candidate1.rigidbody->velocity,contact.worldNormal);
+                        double e = 0.5 * (candidate1.rigidbody->elasticity + candidate2.rigidbody->elasticity);
+                        contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
+                    }
+                    contactManifolds.push_back(contactManifold);
+                }
+            }
+            else if((type1 == ColliderType::Cuboid && type2 == ColliderType::GroundPlane) || (type1 == ColliderType::GroundPlane && type2 == ColliderType::Cuboid))
+            {
+                CollisionCandidate& ground = (type1 == ColliderType::Cuboid) ? candidate2 : candidate1;
+                CollisionCandidate& cuboid = (type2 == ColliderType::Cuboid) ? candidate2 : candidate1;
+                
+                Cuboid cuboidCollider{cuboid.transform ->position_,Vector3D(cuboid.rigidbody->collider_.x_,cuboid.rigidbody->collider_.y_,cuboid.rigidbody->collider_.z_),cuboid.transform->rotation_};
+                Cuboid groundCollider{Vector3D(cuboid.transform->position_.x_,ground.transform->position_.y_-1.0f,cuboid.transform->position_.z_),Vector3D(10.0f,1.0f,10.0f),Quaternion()};
+                
+                cuboid.transform->position_.print("Cube position");
+                
+                ContactManifold contactManifold;
+                contactManifold.contacts = groundCollider.isColliding(cuboidCollider); //get contacts (location and normals only) from cuboid collision detector
+                if(contactManifold.contacts.size()>0)
+                {
+                    for(auto& contact: contactManifold.contacts) //fill in the missing contact fields
+                    {
+                        contact.entity1 = ground;
+                        contact.entity2 = cuboid;
+                        double vn = Vector3D::dot(cuboid.rigidbody->velocity-ground.rigidbody->velocity,contact.worldNormal);
+                        double e = 0.5 * (ground.rigidbody->elasticity + cuboid.rigidbody->elasticity);
+                        contact.targetNormalVelocity = vn > bounceThreshold ? -e * vn: 0.0;
+                    }
+                    contactManifolds.push_back(contactManifold);
                 }
             }
             else
@@ -285,20 +329,21 @@ std::vector<Contact> PhysicsSystem::detectCollisions(World& world)
             }
                     
         }
-    return contacts;
+    return contactManifolds;
 }
 
-void PhysicsSystem::solveContactsIterator(World &world, std::vector<Contact>& contacts, double dt, int iterations)
+void PhysicsSystem::solveContactsIterator(World &world, std::vector<ContactManifold>& contactManifolds, double dt, int iterations)
 {
     Vector3Dd totalL0,momentum0;
     double energy0;
     
     for(int i = 0; i < iterations; i++)
     {
-        if(showDebug)std::cout << "Iteration " << i << " of " << iterations << ". Number of contacts = " << contacts.size() << std::endl;
+        if(showDebug)std::cout << "Iteration " << i << " of " << iterations << ". Number of manifolds = " << contactManifolds.size() << std::endl;
         
         //iterate through contacts
-        for(auto& contact: contacts)
+        for(auto& contactManifold: contactManifolds)
+        for(auto& contact: contactManifold.contacts)
         {
             auto rb1=contact.entity1.rigidbody;
             auto rb2=contact.entity2.rigidbody;
@@ -515,11 +560,11 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
     auto R2inR1 = R2 * R1.transpose();
     auto R1inR2 = R1 * R2.transpose();
 
-    auto p1 = cuboid1.p * R1.transpose();
-    auto p2 = cuboid2.p * R1.transpose();
-    Vector3D p1p2 = p2-p1; // vector from p1 to p2 in world coordinates
-    Vector3D p1p2inR2 = p1p2 * R2.transpose();
-    Vector3D p1p2inR1 = p1p2 * R1.transpose();
+    auto p1 = cuboid1.p; //world coordinates
+    auto p2 = cuboid2.p; //world coordinates
+    Vector3D p1p2World = p2-p1; // vector from p1 to p2 in world coordinates
+    Vector3D p1p2inR2 = p1p2World * R2.transpose(); // ...in cuboid2 coordinates
+    Vector3D p1p2inR1 = p1p2World * R1.transpose(); // ...in cuboid1 coordinates
 
     
     std::array<Vector3D,15> normals; //all defined in cuboid1 coords
@@ -552,8 +597,8 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
         
         auto iMin1 = -r1;
         auto iMax1 = r1;
-        auto iMin2 = Vector3D::dot((p2-p1),normal) - r2;
-        auto iMax2 = Vector3D::dot((p2-p1),normal) + r2;
+        auto iMin2 = Vector3D::dot(p1p2inR1,normal) - r2;
+        auto iMax2 = Vector3D::dot(p1p2inR1,normal) + r2;
         
         if(showDebug)std::cout << "Intervals: " << iMin1 << "," << iMax1 << "  " << iMin2 << "," << iMax2 << std::endl;
         
@@ -567,6 +612,7 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
             float penetration = std::min(iMax1-iMin2,iMax2-iMin1);
             if(penetration < minPenetration)
             {
+                negativeNormal=false;
                 minPenetration = penetration;
                 minPenetrationIndex = i;
                 minPenetrationNormal=normals[i];
@@ -649,7 +695,7 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
 
             //construct simultaneous equation - using cuboid 1 coordinate system
             
-            auto d = va1 - (p1p2 + va2 * R2inR1); //vector from cuboid 1 edge to cuboid 2 edge
+            auto d = va1 - (p1p2inR1 + va2 * R2inR1); //vector from cuboid 1 edge to cuboid 2 edge
             auto n1 = (vb1-va1).getNormalized(); // direction of edge1
             auto n2 = ((vb2-va2)*R2inR1).getNormalized(); //direction of edge 2
             auto n1n2 = Vector3D::dot(n1,n2);
@@ -671,7 +717,7 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
             auto clampedY = std::clamp(solution.y_,0.0f,(vb2-va2).magnitude());
             
             Vector3D solution1 = (n1 * clampedX) + va1; // cuboid1 collision point in local coords
-            Vector3D solution2 = (n2 * clampedY) + p1p2 + va2*R2inR1; //cuboid2 collision point in cuboid1 local coords
+            Vector3D solution2 = (n2 * clampedY) + p1p2inR1 + va2*R2inR1; //cuboid2 collision point in cuboid1 local coords
             
             std::cout << "Cuboid 1 local coords - Solution 1: " << solution1 << " Solution 2: " << solution2 << std::endl;
             
@@ -694,9 +740,9 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
             
             // count zeroes to figure out whether normal is perpendicular with one or more cuboid2 axes
             int countZeroes = 0;
-            if(normal2.x_==0) countZeroes++;
-            if(normal2.y_==0) countZeroes++;
-            if(normal2.z_==0) countZeroes++;
+            if(std::abs(normal2.x_)<1e-6) countZeroes++;
+            if(std::abs(normal2.y_)<1e-6) countZeroes++;
+            if(std::abs(normal2.z_)<1e-6) countZeroes++;
             
             if(countZeroes==0) //vertex collision
             {
@@ -809,14 +855,16 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
             {
                 std::cout << "face to face collision!" << std::endl;
                 
-                //construct cuboid faces in cuboid1 coords to get contact points
-                
+                //construct cuboid faces in R1 rotated (but not translated) coords to get contact points
+                cuboid1.halfEdge.print("Half edge check");
                 auto faceA1 = cuboid1.halfEdge;
                 auto faceB1 = faceA1 * -1.0f;
                 auto faceC1 = faceA1;
                 auto faceD1 = faceB1;
-
-                auto faceA2 = cuboid2.halfEdge * R2inR1 + p1p2inR1;
+                std::cout << "Cuboid 1 face check: " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
+                std::cout << "Negative: " << negativeNormal << std::endl;
+                
+                auto faceA2 = cuboid2.halfEdge * R2inR1;
                 auto faceB2 = faceA2 * -1.0f;
                 auto faceC2 = faceA2;
                 auto faceD2 = faceB2;
@@ -837,21 +885,17 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
                     }
                     
                     std::cout << "Cuboid 1 face (own coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
-                    std::cout << "Cuboid 2 face (own coords): " << faceA2*R1inR2 + p1p2inR2 << faceB2*R1inR2 + p1p2inR2 << faceC2*R1inR2 + p1p2inR2 << faceD2*R1inR2 + p1p2inR2 << std::endl;
+                    std::cout << "Cuboid 2 face (own coords): " << faceA2*R1inR2 << faceB2*R1inR2 << faceC2*R1inR2 << faceD2*R1inR2 << std::endl;
                     
-                    //convert everything to world coords
+                    //convert everything to translated R1 coords
                     
-                    faceA1 = faceA1 * R1 + cuboid1.p;
-                    faceB1 = faceB1 * R1 + cuboid1.p;
-                    faceC1 = faceC1 * R1 + cuboid1.p;
-                    faceD1 = faceD1 * R1 + cuboid1.p;
-                    faceA2 = faceA2 * R1 + cuboid1.p;
-                    faceB2 = faceB2 * R1 + cuboid1.p;
-                    faceC2 = faceC2 * R1 + cuboid1.p;
-                    faceD2 = faceD2 * R1 + cuboid1.p;
+                    faceA2 = faceA2 + p1p2inR1;
+                    faceB2 = faceB2 + p1p2inR1;
+                    faceC2 = faceC2 + p1p2inR1;
+                    faceD2 = faceD2 + p1p2inR1;
                     
-                    std::cout << "Cuboid 1 face (world coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
-                    std::cout << "Cuboid 2 face (world coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
+                    std::cout << "Cuboid 1 face (c1 coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
+                    std::cout << "Cuboid 2 face (c1 coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
                     
                     //clamp faces to each other
                 
@@ -887,19 +931,15 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
                     std::cout << "Cuboid 1 face (own coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
                     std::cout << "Cuboid 2 face (own coords): " << faceA2*R1inR2 << faceB2*R1inR2 << faceC2*R1inR2 << faceD2*R1inR2 << std::endl;
                     
-                    //convert everything to world coords
+                    //convert everything to translated R1 coords
                     
-                    faceA1 = faceA1 * R1 + cuboid1.p;
-                    faceB1 = faceB1 * R1 + cuboid1.p;
-                    faceC1 = faceC1 * R1 + cuboid1.p;
-                    faceD1 = faceD1 * R1 + cuboid1.p;
-                    faceA2 = faceA2 * R1 + cuboid1.p;
-                    faceB2 = faceB2 * R1 + cuboid1.p;
-                    faceC2 = faceC2 * R1 + cuboid1.p;
-                    faceD2 = faceD2 * R1 + cuboid1.p;
+                    faceA2 = faceA2 + p1p2inR1;
+                    faceB2 = faceB2 + p1p2inR1;
+                    faceC2 = faceC2 + p1p2inR1;
+                    faceD2 = faceD2 + p1p2inR1;
                     
-                    std::cout << "Cuboid 1 face (world coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
-                    std::cout << "Cuboid 2 face (world coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
+                    std::cout << "Cuboid 1 face (c1 coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
+                    std::cout << "Cuboid 2 face (c1 coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
                     
                     //clamp faces to each other
                     
@@ -932,21 +972,20 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
                     }
 
                     std::cout << "Cuboid 1 face (own coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
-                    std::cout << "Cuboid 2 face (own coords): " << faceA2*R1inR2 << faceB2*R1inR2 << faceC2*R1inR2 << faceD2*R1inR2 << std::endl;
+                    std::cout << "Cuboid 2 face (c1 rotated coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
+                    std::cout << "Cuboid 2 face (c2 coords): " << faceA2*R1inR2 << faceB2*R1inR2 << faceC2*R1inR2 << faceD2*R1inR2 << std::endl;
                     
-                    //convert everything to world coords
+                    //convert everything to translated R1 coords
                     
-                    faceA1 = faceA1 * R1 + cuboid1.p;
-                    faceB1 = faceB1 * R1 + cuboid1.p;
-                    faceC1 = faceC1 * R1 + cuboid1.p;
-                    faceD1 = faceD1 * R1 + cuboid1.p;
-                    faceA2 = faceA2 * R1 + cuboid1.p;
-                    faceB2 = faceB2 * R1 + cuboid1.p;
-                    faceC2 = faceC2 * R1 + cuboid1.p;
-                    faceD2 = faceD2 * R1 + cuboid1.p;
+                    p1p2World.print("p1p2World");
+                    p1p2inR1.print("p1p2inR1");
                     
-                    std::cout << "Cuboid 1 face (world coords): " << faceA1 << faceB1 << faceC1 << faceD1 << std::endl;
-                    std::cout << "Cuboid 2 face (world coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
+                    faceA2 = faceA2 + p1p2inR1;
+                    faceB2 = faceB2 + p1p2inR1;
+                    faceC2 = faceC2 + p1p2inR1;
+                    faceD2 = faceD2 + p1p2inR1;
+                    
+                    std::cout << "Cuboid 2 face (c1 rot + translated coords): " << faceA2 << faceB2 << faceC2 << faceD2 << std::endl;
                     
                     //clamp faces to each other
                     
@@ -968,6 +1007,13 @@ std::vector<Contact> Cuboid::isColliding(Cuboid &cuboid2)
                 
                 std::cout << "Clamped contacts (cuboid1 coords)" << contact1 << contact2 << contact3 << contact4 << std::endl;
 
+                //now convert to world coords
+                
+                contact1 = contact1 * R1 + cuboid1.p;
+                contact2 = contact2 * R1 + cuboid1.p;
+                contact3 = contact3 * R1 + cuboid1.p;
+                contact4 = contact4 * R1 + cuboid1.p;
+                
                 Contact contactA;
                 contactA.worldLocation = contact1;
                 contactA.worldNormal = (minPenetrationNormal * R1) * -1.0f; //reverse to align with convention in contact solver

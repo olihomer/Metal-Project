@@ -44,6 +44,22 @@ struct Contact
     
 };
 
+struct ContactManifold
+{
+    std::vector<Contact> contacts;
+    Contact& deepestContact()
+    {
+        if(contacts.empty())throw std::runtime_error("Empty contact manifold");
+        Contact* deepest = &contacts.front();
+
+        for(auto& contact: contacts)
+                if(contact.penetrationDepth>deepest->penetrationDepth)deepest=&contact;
+                
+        return *deepest;
+    }
+};
+
+
 struct ForceAccumulator
 {
     Vector3D netForce{};
@@ -79,13 +95,15 @@ public:
     double magT0{};
     double magT1{};
 private:
-    static constexpr float gravity = 0.0f * 9.81f;
+    static constexpr float gravity = 1.0f * 9.81f;
     static constexpr float density = 1.225f;
     static constexpr float minVelocity = 0.005f;
     static constexpr float stickingThreshold = 0.05f;
     static constexpr float zeroRestitutionThreshold = 0.005f;
+    static constexpr double slop = 0.001; // threshold for penetration correction
+    static constexpr double correctionFactor = 0.3;
     
-    std::vector<Contact> contacts_;
+    std::vector<ContactManifold> contactManifolds_;
         
     void resolveCollisions(Transform& transform, RigidBody& rigidbody) const;
     ForceAccumulator accumulateForces(const Transform& transform, RigidBody& rigidbody, double dt) const;
@@ -93,9 +111,9 @@ private:
     void integratePositions(World& world, double dt);
     void integrateEntityVelocities(Transform& transform, RigidBody& rigidbody, double dt);
     void integrateEntityPositions(Transform& transform, RigidBody& rigidbody, double dt);
-    std::vector<Contact> detectCollisions(World& world);
-    void solveContactsIterator(World& world, std::vector<Contact>& contacts, double dt, int iterations);
-    void correctPenetrations(World& world, std::vector<Contact>& contacts) const;
+    std::vector<ContactManifold> detectCollisions(World& world);
+    void solveContactsIterator(World& world, std::vector<ContactManifold>& contacts, double dt, int iterations);
+    void correctPenetrations(World& world, std::vector<ContactManifold>& contacts) const;
     
     void applyDamping(RigidBody& rigidbody) const;
 };

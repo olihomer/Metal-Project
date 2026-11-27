@@ -67,7 +67,6 @@ template<typename T>
 template<typename... Args>
 Handle<T> Pool<T>::addElement(Args&&... args)
 {
-    std::cout << "Adding Element" << std::endl;
     Handle<T> newHandle;
         
     if(freeList_.empty()) //no spare slots, so just add one at the end

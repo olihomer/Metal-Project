@@ -15,6 +15,8 @@
 #include "Mesh.hpp"
 #include "Quaternion.h"
 
+constexpr bool showDebug = false;
+
 enum class MotionType
 {
     Static,
@@ -25,16 +27,25 @@ enum class MotionType
 class RigidBody
 {
 public:
-    RigidBody(MotionType motionType):motionType_(motionType){};
+    RigidBody(MotionType motionType):motionType_(motionType)
+    {
+        if(motionType==MotionType::Static)
+        {
+            invMass = 0;
+            inverseBodyInertia = Matrix3x3d() * 0;
+            inverseWorldInertia = Matrix3x3d() * 0;
+        }
+    }
     RigidBody(MeshAsset::physics physics, MotionType motionType, double density = 800)
     {
         motionType_ = motionType;
         inverseBodyInertia = physics.inverseBodyInertia_ * (1/density);
         bodyInertia = physics.bodyInertia_ * density;
         mass = physics.massAtUnitDensity_ * density;
-        std::cout << "Creating rigid body with mass: " << mass << std::endl;
-        bodyInertia.print("Body inertia");
-        inverseBodyInertia.print("Inverse body inertia");
+        if(showDebug){std::cout << "Creating rigid body with mass: " << mass << std::endl;
+            bodyInertia.print("Body inertia");
+            inverseBodyInertia.print("Inverse body inertia");
+        }
         invMass = 1/mass;
         if(motionType==MotionType::Static)
         {
@@ -58,7 +69,7 @@ public:
     float mu = 0.8f;
     float muSpin = 0.8f;
     float muRoll = 0.02f;
-    float elasticity = 0.6f;
+    float elasticity = 0.7f;
     void setCollider(ColliderType type, float r = 0, float x = 0, float y = 0, float z = 0){collider_=  Collider(type,r,x,y,z);}
     Collider collider_{ColliderType::None};
     MotionType motionType_ = MotionType::Dynamic;

@@ -16,6 +16,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+const bool showDebug = false;
 
 struct VertexKeyHash
 {
@@ -189,13 +190,13 @@ void MeshAsset::ComputeInertia()
     }
 
     COG = COG * (1.0/mass);
-    
-    std::cout << "Mass at unit density: " << mass << std::endl;
-    std::cout << "COG: " << COG.x_ << "," << COG.y_ << "," << COG.z_ << std::endl;
-    
-    std::cout << "Min: " << xMin << " " << yMin << " " << zMin << std::endl;
-    std::cout << "Max: " << xMax << " " << yMax << " " << zMax << std::endl;
-
+    if(showDebug){
+        std::cout << "Mass at unit density: " << mass << std::endl;
+        std::cout << "COG: " << COG.x_ << "," << COG.y_ << "," << COG.z_ << std::endl;
+        
+        std::cout << "Min: " << xMin << " " << yMin << " " << zMin << std::endl;
+        std::cout << "Max: " << xMax << " " << yMax << " " << zMax << std::endl;
+    }
     Matrix3x3d identity;
     Matrix3x3d I = ((identity * cAccum.getTrace()) - cAccum);
     
@@ -206,7 +207,7 @@ void MeshAsset::ComputeInertia()
     Matrix3x3d cPrime = cAccum + ((Matrix3x3d(delta,COG) + Matrix3x3d(COG,delta) + Matrix3x3d(delta,delta)) * mass);
                                  
     I = ((identity * cPrime.getTrace()) - cPrime);
-    I.print("Inertia tensor around COG");
+    if(showDebug)I.print("Inertia tensor around COG");
     
     Matrix3x3d temp;
 
@@ -214,9 +215,9 @@ void MeshAsset::ComputeInertia()
     physics_.inverseBodyInertia_ = I.invert();
     physics_.massAtUnitDensity_ = mass;
     
-    std::cout << "Mesh mass at unit density = " << mass << std::endl;
+    if(showDebug)std::cout << "Mesh mass at unit density = " << mass << std::endl;
     
-    physics_.inverseBodyInertia_.print("Inverse tensor around COG");
+    if(showDebug)physics_.inverseBodyInertia_.print("Inverse tensor around COG");
     
     //translate COG to origin
     if(delta.magnitude()>0.0001)

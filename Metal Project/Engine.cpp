@@ -29,8 +29,8 @@ void Engine::RunApp()
         
     }
     
-    world_.addComponent<Transform>(entities[0],Vector3D(-3.0f,0.0f,0));
-    world_.addComponent<Transform>(entities[1],Vector3D(3.0f,0,0));
+    world_.addComponent<Transform>(entities[0],Vector3D(0,6.0f,0));
+    world_.addComponent<Transform>(entities[1],Vector3D(0,12.0f,0));
 
     auto* trans1 = world_.getComponent<Transform>(entities[0]);
     auto* trans2 = world_.getComponent<Transform>(entities[1]);
@@ -43,16 +43,17 @@ void Engine::RunApp()
     
     rb1->setCollider(ColliderType::Cuboid,0,1.0f,2.0f,3.0f);
     rb2->setCollider(ColliderType::Cuboid,0,1.0f,2.0f,3.0f);
-    rb1->velocity = Vector3D(1,0,0);
-    rb2->velocity = Vector3D(-2,0,0);
+    
+    rb1->velocity = Vector3D(0,0.0f,0);
+    rb2->velocity = Vector3D(0,0,0);
 
-    /*
+    
     auto groundPlane = world_.newEntity("Ground");
     world_.addComponent<Transform>(groundPlane, Vector3D(0,0,0));
     world_.addComponent<RigidBody>(groundPlane,MotionType::Static);
     auto* groundRB = world_.getComponent<RigidBody>(groundPlane);
 
-    groundRB->setCollider(ColliderType::GroundPlane);*/
+    groundRB->setCollider(ColliderType::GroundPlane);
     
 
 }
